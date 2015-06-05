@@ -6,7 +6,7 @@ public class ConfigData {
 
     private ConfigData() {}
 
-    public String getZkConnect() {
+    public static String getZkConnect() {
         return configFile.getOrDefault("zk_connect", "127.0.0.1:2181");
     }
 }

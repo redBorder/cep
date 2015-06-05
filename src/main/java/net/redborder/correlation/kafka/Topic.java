@@ -1,5 +1,6 @@
 package net.redborder.correlation.kafka;
 
+import net.redborder.correlation.kafka.parsers.Parser;
 import java.util.HashMap;
 import java.util.Map;
 

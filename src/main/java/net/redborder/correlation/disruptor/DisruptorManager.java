@@ -10,12 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 public class DisruptorManager {
-    public static Map<String, EventProducer> eventProducer;
+    public Map<String, EventProducer> eventProducer;
 
-    public static void init(Integer ringBufferSize) {
+    public DisruptorManager(KafkaManager kafkaManager, Integer ringBufferSize) {
         eventProducer = new ConcurrentHashMap<>();
 
-        for (Topic t : KafkaManager.getTopics()) {
+        for (Topic t : kafkaManager.getTopics()) {
             Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ringBufferSize, Executors.newCachedThreadPool());
             disruptor.handleEventsWith(RbSiddhiManager.getHandler());
             disruptor.start();
@@ -23,7 +23,7 @@ public class DisruptorManager {
         }
     }
 
-    public static EventProducer getEventProducer(String topic) {
+    public EventProducer getEventProducer(String topic) {
         return eventProducer.get(topic);
     }
 }

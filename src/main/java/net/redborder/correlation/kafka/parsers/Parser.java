@@ -1,4 +1,4 @@
-package net.redborder.correlation.kafka;
+package net.redborder.correlation.kafka.parsers;
 
 import java.util.Map;
 

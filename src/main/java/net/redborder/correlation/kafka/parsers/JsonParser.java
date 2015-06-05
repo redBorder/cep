@@ -1,11 +1,11 @@
-package net.redborder.correlation.kafka;
+package net.redborder.correlation.kafka.parsers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Map;
 
-public class JsonParser implements Parser<String>{
+public class JsonParser implements Parser<String> {
     private ObjectMapper mapper;
 
     public JsonParser(){

@@ -4,6 +4,7 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import net.redborder.correlation.disruptor.DisruptorManager;
 import net.redborder.correlation.disruptor.EventProducer;
+import net.redborder.correlation.kafka.parsers.Parser;
 
 import java.util.Map;
 
