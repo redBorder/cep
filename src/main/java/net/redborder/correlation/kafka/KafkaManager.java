@@ -1,5 +1,6 @@
 package net.redborder.correlation.kafka;
 
+import net.redborder.correlation.kafka.parsers.Parser;
 import net.redborder.correlation.util.ConfigData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,18 +11,17 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class KafkaManager {
-    private static ConsumerManager consumerManager;
-    private static final Logger log = LoggerFactory.getLogger(KafkaManager.class);
+    private  final Logger log = LoggerFactory.getLogger(KafkaManager.class);
+    private ConsumerManager consumerManager;
+    private List<Topic> topics;
 
-    private static List<Topic> topics;
-
-    public static void init() {
+    public KafkaManager() {
         initTopics();
         consumerManager = new ConsumerManager();
-        consumerManager.start(KafkaManager.getTopics());
+        consumerManager.start(getTopics());
     }
 
-    private static void initTopics() {
+    private void initTopics() {
         topics = new CopyOnWriteArrayList<>();
         for (Map.Entry<String, String> entry : ConfigData.getTopics().entrySet()) {
             String parserName = entry.getValue();
@@ -41,11 +41,11 @@ public class KafkaManager {
 
     }
 
-    public static List<Topic> getTopics() {
+    public List<Topic> getTopics() {
         return topics;
     }
 
-    private static void shutdown() {
+    private void shutdown(){
         consumerManager.shutdown();
     }
 }

@@ -3,24 +3,20 @@ package net.redborder.correlation.kafka;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import net.redborder.correlation.util.ConfigFile;
+import net.redborder.correlation.util.ConfigData;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Date: 3/6/15 18:16.
- */
 public class ConsumerManager {
     private static ConsumerConnector consumer;
     private Map<String, ExecutorService> executors;
 
-
     public ConsumerManager() {
         Properties props = new Properties();
         props.put("auto.commit.enable", "true");
-        props.put("zookeeper.connect", ConfigFile.getZkConnect());
+        props.put("zookeeper.connect", ConfigData.getZkConnect());
         props.put("group.id", "rb-correlation-engine");
         props.put("zookeeper.session.timeout.ms", "400");
         props.put("zookeeper.sync.time.ms", "200");
@@ -29,7 +25,6 @@ public class ConsumerManager {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
         executors = new LinkedHashMap<>();
     }
-
 
     public void start(List<Topic> topics) {
         Map<String, Integer> topicsHash = new HashMap<>();
@@ -57,5 +52,4 @@ public class ConsumerManager {
         for (ExecutorService executor : executors.values())
             if (executor != null) executor.shutdown();
     }
-
 }
