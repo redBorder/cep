@@ -29,21 +29,21 @@ public class ConsumerManager {
     public void start(List<Topic> topics) {
         Map<String, Integer> topicsHash = new HashMap<>();
 
-        for(Topic topic : topics){
+        for(Topic topic : topics) {
             topicsHash.putAll(topic.toMap());
         }
 
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicsHash);
 
         for(Topic topic : topics){
-            List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic.getName());
+            List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic.name);
             ExecutorService executor = Executors.newFixedThreadPool(topic.getPartitions());
 
             for (final KafkaStream stream : streams) {
                 executor.submit(new Consumer(stream, topic));
             }
 
-            executors.put(topic.getName(), executor);
+            executors.put(topic.name, executor);
         }
     }
 

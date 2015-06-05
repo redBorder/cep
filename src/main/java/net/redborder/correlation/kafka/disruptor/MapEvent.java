@@ -1,4 +1,4 @@
-package net.redborder.correlation.disruptor;
+package net.redborder.correlation.kafka.disruptor;
 
 import java.util.Map;
 

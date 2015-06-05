@@ -1,7 +1,7 @@
 package net.redborder.correlation.siddhi;
 
 import com.lmax.disruptor.EventHandler;
-import net.redborder.correlation.disruptor.MapEvent;
+import net.redborder.correlation.kafka.disruptor.MapEvent;
 
 public class SiddhiHandler implements EventHandler<MapEvent> {
     @Override

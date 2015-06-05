@@ -1,4 +1,4 @@
-package net.redborder.correlation.disruptor;
+package net.redborder.correlation.kafka.disruptor;
 
 import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.RingBuffer;
