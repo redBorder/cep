@@ -3,10 +3,16 @@ package net.redborder.correlation.kafka;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Topic<T> {
+public class Topic {
     private String name;
     private Integer partitions;
-    private Parser<T> parser;
+    private Parser parser;
+
+    public Topic(String name, Integer partitions, Parser parser){
+        this.name = name;
+        this.partitions = partitions;
+        this.parser = parser;
+    }
 
     public String getName() {
         return name;
@@ -24,11 +30,11 @@ public class Topic<T> {
         this.partitions = partitions;
     }
 
-    public Parser<T> getParser() {
+    public Parser getParser() {
         return parser;
     }
 
-    public void setParser(Parser<T> parser) {
+    public void setParser(Parser parser) {
         this.parser = parser;
     }
 
