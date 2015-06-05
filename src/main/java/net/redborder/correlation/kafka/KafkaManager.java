@@ -1,13 +1,8 @@
 package net.redborder.correlation.kafka;
 
-import net.redborder.correlation.disruptor.DisruptorManager;
-import net.redborder.correlation.disruptor.EventProducer;
-import net.redborder.correlation.util.ConfigFile;
-
 import java.util.*;
 
 public class KafkaManager {
-
     private static ConsumerManager consumerManager;
     private static List<Topic> topics;
 

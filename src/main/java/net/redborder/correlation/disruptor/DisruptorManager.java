@@ -5,13 +5,11 @@ import net.redborder.correlation.kafka.KafkaManager;
 import net.redborder.correlation.kafka.Topic;
 import net.redborder.correlation.siddhi.RbSiddhiManager;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 public class DisruptorManager {
-
     public static Map<String, EventProducer> eventProducer;
 
     public static void init(Integer ringBufferSize) {
@@ -28,5 +26,4 @@ public class DisruptorManager {
     public static EventProducer getEventProducer(String topic) {
         return eventProducer.get(topic);
     }
-
 }

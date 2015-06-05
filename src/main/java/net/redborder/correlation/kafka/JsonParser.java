@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 
-public class JsonParse implements Parser<String>{
+public class JsonParser implements Parser<String>{
     private ObjectMapper mapper;
 
-    public JsonParse(){
+    public JsonParser(){
         mapper = new ObjectMapper();
     }
+
     @Override
     public Map<String, Object> parse(String event) {
         Map<String, Object> map = null;
