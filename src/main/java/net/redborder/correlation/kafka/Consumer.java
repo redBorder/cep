@@ -14,11 +14,13 @@ public class Consumer implements Runnable {
     private KafkaStream stream;
     private Parser parser;
     private EventProducer eventProducer;
+    private Topic topic;
 
-    public Consumer(KafkaStream stream, Parser parser) {
+    public Consumer(KafkaStream stream, Topic topic) {
         this.stream = stream;
-        this.parser = parser;
-        this.eventProducer = DisruptorManager.getEventProducer();
+        this.parser = topic.getParser();
+        this.topic = topic;
+        this.eventProducer = DisruptorManager.getEventProducer(topic.getName());
     }
 
     @Override
@@ -28,7 +30,7 @@ public class Consumer implements Runnable {
             Map<String, Object> event = parser.parse(new String(it.next().message()));
 
             if (event != null) {
-                eventProducer.putData(event);
+                eventProducer.putData(topic.getName(), event);
             }
         }
     }

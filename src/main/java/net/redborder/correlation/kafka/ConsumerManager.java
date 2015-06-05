@@ -45,7 +45,7 @@ public class ConsumerManager {
             ExecutorService executor = Executors.newFixedThreadPool(topic.getPartitions());
 
             for (final KafkaStream stream : streams) {
-                executor.submit(new Consumer(stream, topic.getParser()));
+                executor.submit(new Consumer(stream, topic));
             }
 
             executors.put(topic.getName(), executor);

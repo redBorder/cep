@@ -1,6 +1,6 @@
 package net.redborder.correlation.disruptor;
 
-import com.lmax.disruptor.EventTranslatorOneArg;
+import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.Map;
@@ -13,17 +13,19 @@ public class EventProducer {
         this.ringBuffer = ringBuffer;
     }
 
-    private static final EventTranslatorOneArg<MapEvent, Map<String, Object>> TRANSLATOR =
-            new EventTranslatorOneArg<MapEvent, Map<String, Object>>()
+    private static final EventTranslatorTwoArg<MapEvent, String, Map<String, Object>> TRANSLATOR =
+            new EventTranslatorTwoArg<MapEvent, String, Map<String, Object>>()
             {
-                public void translateTo(MapEvent event, long sequence, Map<String, Object> map)
+                @Override
+                public void translateTo(MapEvent event, long sequence, String source, Map<String, Object> data)
                 {
-                    event.set(map);
+                    event.setSource(source);
+                    event.setData(data);
                 }
             };
 
-    public void putData(Map<String, Object> map)
+    public void putData(String source, Map<String, Object> data)
     {
-        ringBuffer.publishEvent(TRANSLATOR, map);
+        ringBuffer.publishEvent(TRANSLATOR, source, data);
     }
 }
