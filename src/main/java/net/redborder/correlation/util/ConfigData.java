@@ -1,5 +1,6 @@
 package net.redborder.correlation.util;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class ConfigData {
@@ -11,8 +12,8 @@ public class ConfigData {
     public static String getZkConnect() {
         return configFile.getOrDefault("zk_connect", "127.0.0.1:2181");
     }
-    public static Map<String, String> getTopics() {
-        return null;
-    }
 
+    public static Map<String, String> getTopics() {
+        return configFile.getOrDefault("topics", Collections.<String, String>emptyMap());
+    }
 }
