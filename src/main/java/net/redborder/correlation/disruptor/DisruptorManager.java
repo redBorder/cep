@@ -7,7 +7,6 @@ import net.redborder.correlation.siddhi.RbSiddhiManager;
 import java.util.concurrent.Executors;
 
 public class DisruptorManager {
-
     private static Disruptor<MapEvent> disruptor;
     public static EventProducer eventProducer;
 

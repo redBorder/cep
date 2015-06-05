@@ -1,6 +1,5 @@
 package net.redborder.correlation.kafka;
 
-
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import net.redborder.correlation.disruptor.DisruptorManager;
@@ -8,9 +7,7 @@ import net.redborder.correlation.disruptor.EventProducer;
 
 import java.util.Map;
 
-
 public class Consumer implements Runnable {
-
     private KafkaStream stream;
     private Parser parser;
     private EventProducer eventProducer;
