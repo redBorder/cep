@@ -4,12 +4,16 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import net.redborder.correlation.util.ConfigData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ConsumerManager {
+    private static final Logger log = LoggerFactory.getLogger(ConsumerManager.class);
+
     private static ConsumerConnector consumer;
     private Map<String, ExecutorService> executors;
 
@@ -28,6 +32,7 @@ public class ConsumerManager {
 
     public void start(List<Topic> topics) {
         Map<String, Integer> topicsHash = new HashMap<>();
+        log.info("Starting with topics {}", topics);
 
         for(Topic topic : topics) {
             topicsHash.putAll(topic.toMap());
@@ -35,15 +40,15 @@ public class ConsumerManager {
 
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicsHash);
 
-        for(Topic topic : topics){
-            List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic.name);
+        for(Topic topic : topics) {
+            List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic.getName());
             ExecutorService executor = Executors.newFixedThreadPool(topic.getPartitions());
 
             for (final KafkaStream stream : streams) {
                 executor.submit(new Consumer(stream, topic));
             }
 
-            executors.put(topic.name, executor);
+            executors.put(topic.getName(), executor);
         }
     }
 
