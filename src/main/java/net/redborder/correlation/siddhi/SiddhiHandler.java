@@ -15,12 +15,14 @@ import java.util.Map;
 public class SiddhiHandler implements EventHandler<MapEvent> {
     private static final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
     private InputHandler inputHandler;
+    private byte [] snapshot;
 
     public SiddhiHandler() {
         SiddhiManager siddhiManager = new SiddhiManager();
 
-        String executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" +
-            "@info(name = 'queryTest') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
+        String query = "@info(name = 'queryTest') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
+        String executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" + query ;
+
 
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
 
@@ -33,6 +35,33 @@ public class SiddhiHandler implements EventHandler<MapEvent> {
 
         executionPlanRuntime.start();
         inputHandler = executionPlanRuntime.getInputHandler("testStream");
+        snapshot = executionPlanRuntime.snapshot();
+        executionPlanRuntime.shutdown();
+
+        //Añadir una query e inicializar el nuevo executionPlanRunTime
+        //
+        //
+        //
+        //
+        /*
+        query.concat("@info(name = 'queryTest2') from testStream[bytes > 2990] select src insert into outputTestStream;");
+        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
+        executionPlanRuntime.restore(snapshot);
+        executionPlanRuntime.start();
+        */
+
+        query.concat("@info(name = 'queryTest2') from testStream[bytes > 2990] select src insert into outputTestStream;");
+        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
+
+        executionPlanRuntime.addCallback("queryTest2", new QueryCallback() {
+            @Override
+            public void receive(long l, Event[] events, Event[] events1) {
+                log.info("Alert with more than 2990 bytes!!! {}", l);
+            }
+        });
+
+        executionPlanRuntime.start();
+
     }
 
 
