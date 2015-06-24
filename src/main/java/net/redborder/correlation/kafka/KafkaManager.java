@@ -10,21 +10,27 @@ import net.redborder.correlation.util.ConfigData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
+@ThreadSafe
 public class KafkaManager {
     private final Logger log = LoggerFactory.getLogger(KafkaManager.class);
-    private ConsumerManager consumerManager;
-    private List<Topic> topics;
+
+    private final ConsumerManager consumerManager;
+    private final List<Topic> topics;
+    private final List<Topic> unmodifiableTopics;
 
     public KafkaManager() {
         Integer ringBufferSize = ConfigData.getRingBufferSize();
-        topics = new CopyOnWriteArrayList<>();
+        topics = new ArrayList<>();
+        unmodifiableTopics = Collections.unmodifiableList(topics);
 
         for (Map.Entry<String, String> entry : ConfigData.getTopics().entrySet()) {
             String parserName = entry.getValue();
@@ -51,11 +57,11 @@ public class KafkaManager {
         }
 
         consumerManager = new ConsumerManager();
-        consumerManager.start(topics);
+        consumerManager.start(unmodifiableTopics);
     }
 
     public List<Topic> getTopics() {
-        return topics;
+        return unmodifiableTopics;
     }
 
     public void shutdown() {

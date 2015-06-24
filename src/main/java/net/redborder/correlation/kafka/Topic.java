@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Topic {
-    public final String name;
-    public final Parser parser;
-    public final EventProducer eventProducer;
+    private final String name;
+    private final Parser parser;
+    private final EventProducer eventProducer;
     private Integer partitions;
 
     public Topic(String name, Integer partitions, Parser parser, EventProducer eventProducer) {
@@ -25,6 +25,18 @@ public class Topic {
 
     public void setPartitions(Integer partitions) {
         this.partitions = partitions;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Parser getParser() {
+        return parser;
+    }
+
+    public EventProducer getEventProducer() {
+        return eventProducer;
     }
 
     public Map<String, Integer> toMap(){

@@ -16,6 +16,7 @@ public class ConfigFile {
 
     public ConfigFile(String configFile) {
         this.configFile = configFile;
+        reload();
     }
 
     public void reload() {
