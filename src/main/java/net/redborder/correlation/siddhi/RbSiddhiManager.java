@@ -34,7 +34,7 @@ public class RbSiddhiManager implements RbSiddhiManagerInterface{
 
 private RbSiddhiManager (){}
 
-    
+
     @Override
     public boolean add(String newQuery) {
         boolean isAdd = false;
