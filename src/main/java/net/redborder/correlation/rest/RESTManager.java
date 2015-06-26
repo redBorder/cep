@@ -18,7 +18,7 @@ public class RESTManager {
     private final Logger log = LoggerFactory.getLogger(RESTManager.class);
 
     // Base URI the Grizzly HTTP server will listen on
-    private String BASE_URI = "http://localhost:8080/myapp/";
+    private String BASE_URI = "http://localhost:8888/myapp/";
     private ResourceConfig rc;
     private HttpServer server;
 
@@ -31,6 +31,11 @@ public class RESTManager {
         // create a resource config that scans for JAX-RS resources and providers
         // in com.example package
         rc = new ResourceConfig().packages("net.redborder.correlation.rest");
+
+        if (rc != null)
+            this.startServer();
+        else
+            log.error("Configuration is not valid");
 
     }
 

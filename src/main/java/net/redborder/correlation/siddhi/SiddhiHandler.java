@@ -15,54 +15,89 @@ import java.util.Map;
 public class SiddhiHandler implements EventHandler<MapEvent> {
     private static final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
     private InputHandler inputHandler;
+    private  ExecutionPlanRuntime executionPlanRuntime;
     private byte [] snapshot;
+    private SiddhiManager siddhiManager;
+    private String executionPlan;
+    private String queries;
 
     public SiddhiHandler() {
-        SiddhiManager siddhiManager = new SiddhiManager();
-
-        String query = "@info(name = 'queryTest') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
-        String executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" + query ;
+        this.siddhiManager = new SiddhiManager();
 
 
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
+        queries = "@info(name = 'queryTest1') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
+        executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" + queries ;
 
-        executionPlanRuntime.addCallback("queryTest", new QueryCallback() {
-            @Override
-            public void receive(long l, Event[] events, Event[] events1) {
-                log.info("Alert with more than 2990 bytes!!! {}", l);
-            }
-        });
-
-        executionPlanRuntime.start();
-        inputHandler = executionPlanRuntime.getInputHandler("testStream");
-        snapshot = executionPlanRuntime.snapshot();
-        executionPlanRuntime.shutdown();
-
-        //Añadir una query e inicializar el nuevo executionPlanRunTime
-        //
-        //
-        //
-        //
-        /*
-        query.concat("@info(name = 'queryTest2') from testStream[bytes > 2990] select src insert into outputTestStream;");
-        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
-        executionPlanRuntime.restore(snapshot);
-        executionPlanRuntime.start();
-        */
-
-        query.concat("@info(name = 'queryTest2') from testStream[bytes > 2990] select src insert into outputTestStream;");
-        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
-
-        executionPlanRuntime.addCallback("queryTest2", new QueryCallback() {
-            @Override
-            public void receive(long l, Event[] events, Event[] events1) {
-                log.info("Alert with more than 2990 bytes!!! {}", l);
-            }
-        });
-
-        executionPlanRuntime.start();
+        this.start(executionPlan);
 
     }
+
+
+
+
+    public void start(String execPlan){
+
+        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(execPlan);
+
+
+        if(executionPlanRuntime != null) {
+            executionPlanRuntime.addCallback("queryTest1", new QueryCallback() {
+                @Override
+                public void receive(long l, Event[] events, Event[] events1) {
+                    log.info("Alert with more than 2990 bytes!!! {}", l);
+                }
+            });
+
+            executionPlanRuntime.start();
+            inputHandler = executionPlanRuntime.getInputHandler("testStream");
+            log.info("Starting siddhi...");
+        }
+        else
+            log.error("Siddhi is not initialized");
+    }
+
+
+
+
+
+
+
+    public void stop(){
+
+        if(executionPlanRuntime != null){
+            executionPlanRuntime.shutdown();
+            log.info("Shutting down siddhi...");
+        }
+
+    }
+
+
+
+
+
+    public void updateExecutionPlan(String newExecutionPlan){
+
+        if(executionPlanRuntime != null){
+            executionPlanRuntime.shutdown();
+            executionPlan = newExecutionPlan;
+            start(executionPlan);
+
+        }
+        else
+            log.warn("Update is not completed");
+    }
+
+
+
+
+
+
+    public void addQuery(String newQuery){
+        queries = queries + newQuery;
+    }
+
+
+
 
 
     @Override

@@ -1,5 +1,7 @@
 package net.redborder.correlation.rest;
 
+import net.redborder.correlation.siddhi.RbSiddhiManager;
+
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -13,8 +15,7 @@ import javax.ws.rs.core.Response;
 @Path("res")
 public class Resource {
 
-    private Queries queries = new Queries();
-
+    RbSiddhiManager rbSiddhiManager = RbSiddhiManager.getRbSiddhiManagerInstance();
     /**
      *
      * Método que manejará las peticiones HTTP POST con formato JSON.
@@ -32,7 +33,7 @@ public class Resource {
     public Response receiveQuery(String query){
 
         //Comprobamos que la petición de inclusión ha sido éxitosa
-        if(queries.addQuery(query))
+        if(rbSiddhiManager.add(query))
             return Response.status(200).entity(query).build();
         else
             return Response.status(202).entity(query).build();
@@ -52,14 +53,11 @@ public class Resource {
     @DELETE
     @Path("/delete/{id}")
     @Consumes (MediaType.APPLICATION_JSON)
-    public Response deleteQuery(@PathParam("id") int id){
+    public Response deleteQuery(@PathParam("id") String id){
 
-        boolean isDelete = false;
-
-        isDelete = queries.deleteQuery(id);
 
         //Comprobamos que la petición de borrado ha sido éxitosa
-        if(isDelete)
+        if(rbSiddhiManager.remove(id))
             return Response.status(200).build();
         else
             return Response.status(404).entity("Query with the id " + id + " is not present ").build();
