@@ -7,61 +7,50 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-/**
- * Created by jmf on 24/06/15.
- */
-
 @Singleton
 @Path("res")
 public class Resource {
+    RestListener listener = RbSiddhiManager.getInstance();
 
-    RbSiddhiManager rbSiddhiManager = RbSiddhiManager.getRbSiddhiManagerInstance();
     /**
+     * This method handles HTTP POST requests with JSON data.
+     * It sends an add operation to the listener passing it the JSON data.
      *
-     * Método que manejará las peticiones HTTP POST con formato JSON.
-     * Mediante este método se incluirán las querys enviadas por el usuario.
+     * @param json A string in JSON format.
      *
-     * @param query Acepta una cadena en formato JSON que contiene la query
-     *
-     *
-     * @return Respuesta con el código obtenido al tratar la petición
+     * @return Response with the appropriate HTTP code.
      */
 
     @POST
     @Path("send")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response receiveQuery(String query){
-
-        //Comprobamos que la petición de inclusión ha sido éxitosa
-        if(rbSiddhiManager.add(query))
-            return Response.status(200).entity(query).build();
-        else
-            return Response.status(202).entity(query).build();
-
+    public Response receiveQuery(String json) {
+        // Check if the listener accepted the data
+        if (listener.add(json)) {
+            return Response.status(200).entity(json).build();
+        } else {
+            return Response.status(202).entity(json).build();
+        }
     }
 
     /**
-     * Método que manejará las peticiones HTTP DELETE.
-     * Mediante este método se eliminarán las querys enviadas por el usuario.
+     * This methods handles HTTP DELETE requests.
+     * It sends an remove operation to the listener passing it an ID.
      *
+     * @param id The ID sent by the user on the request
      *
-     * @param id Se incluirá en la petición el id de la query a eliminar
-     *
-     * @return Respuesta con el código obtenido al tratar la petición
+     * @return Response with the appropriate HTTP code.
      */
 
     @DELETE
     @Path("/delete/{id}")
     @Consumes (MediaType.APPLICATION_JSON)
     public Response deleteQuery(@PathParam("id") String id){
-
-
-        //Comprobamos que la petición de borrado ha sido éxitosa
-        if(rbSiddhiManager.remove(id))
+        // Check if the listener accepted the operation
+        if (listener.remove(id)) {
             return Response.status(200).build();
-        else
-            return Response.status(404).entity("Query with the id " + id + " is not present ").build();
-
-
+        } else {
+            return Response.status(404).entity("Query with the id " + id + " is not present").build();
+        }
     }
 }

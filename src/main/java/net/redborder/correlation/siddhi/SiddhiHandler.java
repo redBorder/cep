@@ -16,7 +16,6 @@ public class SiddhiHandler implements EventHandler<MapEvent> {
     private static final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
     private InputHandler inputHandler;
     private  ExecutionPlanRuntime executionPlanRuntime;
-    private byte [] snapshot;
     private SiddhiManager siddhiManager;
     private String executionPlan;
     private String queries;
@@ -24,23 +23,16 @@ public class SiddhiHandler implements EventHandler<MapEvent> {
     public SiddhiHandler() {
         this.siddhiManager = new SiddhiManager();
 
-
         queries = "@info(name = 'queryTest1') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
         executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" + queries ;
 
         this.start(executionPlan);
-
     }
 
-
-
-
     public void start(String execPlan){
-
         executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(execPlan);
 
-
-        if(executionPlanRuntime != null) {
+        if (executionPlanRuntime != null) {
             executionPlanRuntime.addCallback("queryTest1", new QueryCallback() {
                 @Override
                 public void receive(long l, Event[] events, Event[] events1) {
@@ -51,54 +43,32 @@ public class SiddhiHandler implements EventHandler<MapEvent> {
             executionPlanRuntime.start();
             inputHandler = executionPlanRuntime.getInputHandler("testStream");
             log.info("Starting siddhi...");
-        }
-        else
+        } else {
             log.error("Siddhi is not initialized");
-    }
-
-
-
-
-
-
-
-    public void stop(){
-
-        if(executionPlanRuntime != null){
-            executionPlanRuntime.shutdown();
-            log.info("Shutting down siddhi...");
         }
-
     }
 
-
-
-
+    public void stop() {
+        if (executionPlanRuntime != null) {
+            log.info("Shutting down siddhi...");
+            executionPlanRuntime.shutdown();
+        }
+    }
 
     public void updateExecutionPlan(String newExecutionPlan){
-
-        if(executionPlanRuntime != null){
+        if (executionPlanRuntime != null) {
             executionPlanRuntime.shutdown();
             executionPlan = newExecutionPlan;
+
             start(executionPlan);
-
-        }
-        else
+        } else {
             log.warn("Update is not completed");
+        }
     }
-
-
-
-
-
 
     public void addQuery(String newQuery){
         queries = queries + newQuery;
     }
-
-
-
-
 
     @Override
     public void onEvent(MapEvent mapEvent, long sequence, boolean endOfBatch) throws Exception {
