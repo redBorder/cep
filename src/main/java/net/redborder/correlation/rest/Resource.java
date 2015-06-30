@@ -1,7 +1,5 @@
 package net.redborder.correlation.rest;
 
-import net.redborder.correlation.siddhi.RbSiddhiManager;
-
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -10,8 +8,6 @@ import javax.ws.rs.core.Response;
 @Singleton
 @Path("res")
 public class Resource {
-    RestListener listener = RbSiddhiManager.getInstance();
-
     /**
      * This method handles HTTP POST requests with JSON data.
      * It sends an add operation to the listener passing it the JSON data.
@@ -25,8 +21,12 @@ public class Resource {
     @Path("send")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response receiveQuery(String json) {
+        RestListener listener = RestManager.getListener();
+
         // Check if the listener accepted the data
-        if (listener.add(json)) {
+        if (listener == null) {
+            return Response.status(500).build();
+        } else if (listener.add(json)) {
             return Response.status(200).entity(json).build();
         } else {
             return Response.status(202).entity(json).build();
@@ -45,9 +45,13 @@ public class Resource {
     @DELETE
     @Path("/delete/{id}")
     @Consumes (MediaType.APPLICATION_JSON)
-    public Response deleteQuery(@PathParam("id") String id){
+    public Response deleteQuery(@PathParam("id") String id) {
+        RestListener listener = RestManager.getListener();
+
         // Check if the listener accepted the operation
-        if (listener.remove(id)) {
+        if (listener == null) {
+            return Response.status(500).build();
+        } else if (listener.remove(id)) {
             return Response.status(200).build();
         } else {
             return Response.status(404).entity("Query with the id " + id + " is not present").build();
