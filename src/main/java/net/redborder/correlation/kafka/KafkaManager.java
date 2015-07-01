@@ -1,11 +1,11 @@
 package net.redborder.correlation.kafka;
 
+import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.dsl.Disruptor;
 import net.redborder.correlation.kafka.disruptor.EventProducer;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.kafka.disruptor.MapEventFactory;
 import net.redborder.correlation.kafka.parsers.Parser;
-import net.redborder.correlation.siddhi.RbSiddhiManager;
 import net.redborder.correlation.util.ConfigData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class KafkaManager {
     private final List<Topic> topics;
     private final List<Topic> unmodifiableTopics;
 
-    public KafkaManager() {
+    public KafkaManager(EventHandler eventHandler) {
         Integer ringBufferSize = ConfigData.getRingBufferSize();
         topics = new ArrayList<>();
         unmodifiableTopics = Collections.unmodifiableList(topics);
@@ -43,7 +43,7 @@ public class KafkaManager {
 
                 // Create the disruptor for this topic and start it
                 Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ringBufferSize, Executors.newCachedThreadPool());
-                disruptor.handleEventsWith(RbSiddhiManager.getHandler());
+                disruptor.handleEventsWith(eventHandler);
                 disruptor.start();
 
                 // Create topic entry
