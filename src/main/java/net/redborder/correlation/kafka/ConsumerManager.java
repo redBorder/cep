@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 public class ConsumerManager {
     private static final Logger log = LoggerFactory.getLogger(ConsumerManager.class);
 
-    private static ConsumerConnector consumer;
+    private ConsumerConnector consumer;
     private Map<String, ExecutorService> executors;
 
     public ConsumerManager() {

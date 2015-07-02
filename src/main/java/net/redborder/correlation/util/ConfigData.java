@@ -13,6 +13,10 @@ public class ConfigData {
         return configFile.getOrDefault("zk_connect", "127.0.0.1:2181");
     }
 
+    public static String getRESTURI() {
+        return configFile.getOrDefault("rest_uri", "http://localhost:8888/myapp/");
+    }
+
     public static Integer getRingBufferSize() { return configFile.getOrDefault("ring_buffer_size", 1024); }
 
     public static Map<String, String> getTopics() {

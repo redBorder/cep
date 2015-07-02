@@ -5,39 +5,41 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.net.URI;
 
 public class RestManager {
     private static final Logger log = LoggerFactory.getLogger(RestManager.class);
-
-    // Base URI the Grizzly HTTP server will listen on
-    private static final String BASE_URI = "http://localhost:8888/myapp/";
-    private static RestListener listener = null;
-    private static ResourceConfig rc;
+    private static RestListener listener;
     private static HttpServer server;
 
     private RestManager() {}
 
     /**
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
-     * TODO: Get URI from ConfigData
      */
-    public static void startServer(RestListener rl) {
+    public static void startServer(String wsUri, RestListener rl) {
         // create a resource config that scans for JAX-RS resources and providers
-        // in com.example package
-        rc = new ResourceConfig().packages("net.redborder.correlation.rest");
-
-        // create a resource config that scans for JAX-RS resources and providers
-        // in com.example package
-        // rc = new ResourceConfig().packages("net.redborder.correlation.rest");
+        ResourceConfig rc = new ResourceConfig().packages("net.redborder.correlation.rest").register(Resource.class);
 
         // Set the listener for the petitions
         listener = rl;
 
-        // create and start a new instance of grizzly http server
+        // create a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
-        server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+        server = GrizzlyHttpServerFactory.createHttpServer(URI.create(wsUri), rc);
+
+        // start the server
         log.info("Starting server...");
+
+        try {
+            server.start();
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+
+        log.info("HTTP server started");
     }
 
     public static void stopServer() {

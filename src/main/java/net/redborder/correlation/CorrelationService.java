@@ -3,6 +3,7 @@ package net.redborder.correlation;
 import net.redborder.correlation.kafka.KafkaManager;
 import net.redborder.correlation.rest.RestManager;
 import net.redborder.correlation.siddhi.SiddhiHandler;
+import net.redborder.correlation.util.ConfigData;
 
 public class CorrelationService {
     public static void main(String[] args) {
@@ -16,6 +17,7 @@ public class CorrelationService {
 
         // RestManager starts the REST API and redirects the queries
         // that users add with it to SiddhiHandler.
-        RestManager.startServer(siddhiHandler);
+        String restUri = ConfigData.getRESTURI();
+        RestManager.startServer(restUri, siddhiHandler);
     }
 }

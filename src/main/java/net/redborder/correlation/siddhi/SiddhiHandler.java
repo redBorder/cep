@@ -2,79 +2,40 @@ package net.redborder.correlation.siddhi;
 
 import com.lmax.disruptor.EventHandler;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
+import net.redborder.correlation.rest.RestException;
 import net.redborder.correlation.rest.RestListener;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.query.output.callback.QueryCallback;
-import org.wso2.siddhi.core.stream.input.InputHandler;
 
+import javax.ws.rs.NotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
 
     private Map<String, Map<String, Object>> rawQueries = new HashMap<>();
-    private InputHandler inputHandler;
-    private ObjectMapper mapper;
-    private ExecutionPlanRuntime executionPlanRuntime;
+    private List<ExecutionPlan> executionPlans;
     private SiddhiManager siddhiManager;
-    private String executionPlan;
-    private String queries;
+    private ObjectMapper mapper;
 
     public SiddhiHandler() {
-        this.mapper = new ObjectMapper();
         this.siddhiManager = new SiddhiManager();
-
-        queries = "@info(name = 'queryTest1') from testStream[bytes > 2990] select src,dst insert into outputTestStream;";
-        executionPlan = "@config(async = 'true')define stream testStream (src string, dst string, bytes int);" + queries ;
-
-        this.start(executionPlan);
-    }
-
-    public void start(String execPlan) {
-        executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(execPlan);
-
-        if (executionPlanRuntime != null) {
-            executionPlanRuntime.addCallback("queryTest1", new QueryCallback() {
-                @Override
-                public void receive(long l, Event[] events, Event[] events1) {
-                    log.info("Alert with more than 2990 bytes!!! {}", l);
-                }
-            });
-
-            executionPlanRuntime.start();
-            inputHandler = executionPlanRuntime.getInputHandler("testStream");
-            log.info("Starting siddhi...");
-        } else {
-            log.error("Siddhi is not initialized");
-        }
+        this.executionPlans = new ArrayList<>();
+        this.mapper = new ObjectMapper();
     }
 
     public void stop() {
-        if (executionPlanRuntime != null) {
-            log.info("Shutting down siddhi...");
-            executionPlanRuntime.shutdown();
-        }
-    }
+        log.info("Stopping down execution plans...");
 
-    public void updateExecutionPlan(String newExecutionPlan) {
-        if (executionPlanRuntime != null) {
-            executionPlanRuntime.shutdown();
-            executionPlan = newExecutionPlan;
-            start(executionPlan);
-        } else {
-            log.warn("Update is not completed");
+        for (ExecutionPlan executionPlan : executionPlans) {
+            executionPlan.stop();
         }
-    }
-
-    public void addQuery(String newQuery){
-        queries = queries + newQuery;
     }
 
     @Override
@@ -83,44 +44,61 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         String src = (String) data.get("src");
         String dst = (String) data.get("dst");
         Integer bytes = (Integer) data.get("bytes");
-        inputHandler.send(new Object[] { src, dst, bytes });
-    }
 
-    @Override
-    public boolean add(String newQuery) {
-        Map<String, Object> query;
-        boolean result = false;
-
-        try {
-            query = mapper.readValue(newQuery, Map.class);
-
-            String id = query.get("id").toString();
-            if (rawQueries.containsKey(id)) {
-                result = true;
-                log.error("Query with id {} already exist", id);
-            } else {
-                rawQueries.put(id, query);
-                log.info("New query added: {}", query);
-            }
-        } catch (IOException e) {
-            log.debug("Exception! {}", e.getMessage());
-            log.error("Couldn't parse JSON query {}", newQuery);
+        for (ExecutionPlan executionPlan : executionPlans) {
+            executionPlan.getInputHandler().send(new Object[]{src, dst, bytes});
         }
-
-        return result;
     }
 
     @Override
-    public boolean remove(String id) {
-        boolean removed = (rawQueries.remove(id) != null);
+    public void add(Map<String, Object> element) throws RestException {
+        String id = element.get("id").toString();
+        if (rawQueries.containsKey(id)) {
+            throw new RestException("Query with id " + id + " already exist");
+        } else {
+            ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
+            executionPlan.start(siddhiManager);
+            executionPlans.add(executionPlan);
 
-        if (removed) {
+            rawQueries.put(id, element);
+            log.info("New query added: {}", element);
+        }
+    }
+
+    @Override
+    public void remove(String id) throws NotFoundException, RestException {
+        if (rawQueries.remove(id) != null) {
             log.info("Query with the id {} has been removed", id);
             log.info("Current queries: {}", rawQueries);
         } else {
-            log.error("Query with the id {} is not present", id);
+            throw new NotFoundException("Query with the id " + id + " is not present");
+        }
+    }
+
+    @Override
+    public void synchronize(List<Map<String, Object>> elements) throws RestException {
+        Map<String, Map<String, Object>> newQueries = new HashMap<>();
+
+        for (Map<String, Object> element : elements) {
+            String id = element.get("id").toString();
+            newQueries.put(id, element);
         }
 
-        return removed;
+        rawQueries = newQueries;
+    }
+
+    @Override
+    public String list() throws RestException {
+        List<Map<String, Object>> listQueries = new ArrayList<>();
+
+        for (Map.Entry<String, Map<String, Object>> query : rawQueries.entrySet()) {
+            listQueries.add(query.getValue());
+        }
+
+        try {
+            return mapper.writeValueAsString(listQueries);
+        } catch (IOException e) {
+            throw new RestException("Couldn't serialize list of queries", e);
+        }
     }
 }
