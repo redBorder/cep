@@ -65,6 +65,12 @@
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-core</artifactId>
             <version>3.0.0-alpha</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

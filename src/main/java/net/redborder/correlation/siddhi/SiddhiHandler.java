@@ -37,6 +37,10 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
     }
 
+    public Map<String, ExecutionPlan> getExecutionPlans() {
+        return executionPlans;
+    }
+
     @Override
     public void onEvent(MapEvent mapEvent, long sequence, boolean endOfBatch) throws Exception {
         if (!executionPlans.isEmpty()) {
