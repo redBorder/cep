@@ -88,7 +88,7 @@ public class Resource {
     @Path("/synchronize")
     @Consumes (MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response synchronize(@PathParam("json") String json) {
+    public Response synchronize(String json) {
         RestListener listener = RestManager.getListener();
         log.info("Synchronize request with json: {}", json);
 

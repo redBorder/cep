@@ -86,7 +86,25 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     @Override
     public void synchronize(List<Map<String, Object>> elements) throws RestException {
-        // TODO
+        Map<String, ExecutionPlan> newExecutionPlans = new HashMap<>();
+
+        for (Map<String, Object> element : elements) {
+            ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
+
+            if (newExecutionPlans.containsKey(executionPlan.getId())) {
+                throw new RestException("you can't specify two or more queries with the same id");
+            }
+
+            try {
+                executionPlan.start(siddhiManager);
+            } catch (Exception e) {
+                throw new RestException("couldn't creating execution plan for query " + executionPlan.getId(), e);
+            }
+
+            newExecutionPlans.put(executionPlan.getId(), executionPlan);
+        }
+
+        executionPlans = newExecutionPlans;
     }
 
     @Override
