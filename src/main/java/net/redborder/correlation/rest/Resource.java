@@ -9,7 +9,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class Resource {
      */
 
     @POST
-    @Path("add")
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response add(String json) {
@@ -40,9 +39,10 @@ public class Resource {
         // Check if the listener accepted the data
         try {
             listener.add(parseMap(json));
-            return Response.status(Response.Status.CREATED).entity(Collections.emptyMap()).build();
-        } catch (RestException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(toMap(e)).build();
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().entity(toMap(e)).build();
         }
     }
 
@@ -56,7 +56,7 @@ public class Resource {
      */
 
     @DELETE
-    @Path("/remove/{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response remove(@PathParam("id") String id) {
         RestListener listener = RestManager.getListener();
@@ -65,13 +65,13 @@ public class Resource {
         // Check if the listener accepted the operation
         try {
             listener.remove(id);
-            return Response.status(Response.Status.OK).build();
+            return Response.ok().build();
         } catch (NotFoundException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (RestException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(toMap(e)).build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.serverError().entity(toMap(e)).build();
         }
     }
 
@@ -85,20 +85,20 @@ public class Resource {
      */
 
     @POST
-    @Path("synchronize")
+    @Path("/synchronize")
     @Consumes (MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response synchronize(@PathParam("json") String json) {
-        log.info("Synchronize request with json: {}", json);
         RestListener listener = RestManager.getListener();
+        log.info("Synchronize request with json: {}", json);
 
         // Check if the listener accepted the operation
         try {
             listener.synchronize(parseList(json));
-            return Response.status(Response.Status.OK).build();
-        } catch (RestException e) {
+            return Response.ok().build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.serverError().entity(toMap(e)).build();
         }
     }
 
@@ -110,7 +110,7 @@ public class Resource {
      */
 
     @GET
-    @Path("list")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() {
         RestListener listener = RestManager.getListener();
@@ -118,21 +118,23 @@ public class Resource {
 
         try {
             String list = listener.list();
-            return Response.status(Response.Status.OK).entity(list).build();
-        } catch (RestException e) {
+            return Response.ok().entity(list).build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.serverError().entity(toMap(e)).build();
         }
     }
+
+    /**
+     * Helper methods
+     */
 
     private Map<String, Object> parseMap(String str) throws RestException {
         try {
             Map<String, Object> result = mapper.readValue(str, Map.class);
             return result;
         } catch (IOException e) {
-            log.debug("Exception! {}", e.getMessage());
-            log.error("Couldn't parse JSON query {}", str);
-            throw new RestException("Couldn't parse JSON", e);
+            throw new RestException("couldn't parse json", e);
         }
     }
 
@@ -141,15 +143,14 @@ public class Resource {
             List<Map<String, Object>> result = mapper.readValue(str, List.class);
             return result;
         } catch (IOException e) {
-            log.debug("Exception! {}", e.getMessage());
-            log.error("Couldn't parse JSON query {}", str);
-            throw new RestException("Couldn't parse JSON", e);
+            throw new RestException("couldn't parse json", e);
         }
     }
 
-    private Map<String, String> toMap(Throwable e) {
-        Map<String, String> result = new HashMap<>();
-        result.put("error", e.getMessage());
+    private Map<String, Object> toMap(Throwable e) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", 500);
+        result.put("message", e.getMessage());
         return result;
     }
 }

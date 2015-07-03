@@ -2,6 +2,7 @@ package net.redborder.correlation.rest;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,9 @@ public class RestManager {
      */
     public static void startServer(String wsUri, RestListener rl) {
         // create a resource config that scans for JAX-RS resources and providers
-        ResourceConfig rc = new ResourceConfig().packages("net.redborder.correlation.rest").register(Resource.class);
+        ResourceConfig rc = new ResourceConfig()
+                .register(Resource.class)
+                .register(JacksonFeature.class);
 
         // Set the listener for the petitions
         listener = rl;

@@ -9,11 +9,13 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExecutionPlan {
     private final Logger log = LoggerFactory.getLogger(ExecutionPlan.class);
+
     private final List<String> inputTopics;
     private final Map<String, String> outputTopics;
     private final String plan, id;
@@ -37,6 +39,34 @@ public class ExecutionPlan {
         this.plan = plan;
     }
 
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", id);
+        result.put("input", inputTopics);
+        result.put("output", outputTopics);
+        result.put("executionPlan", plan);
+        return result;
+    }
+
+    public List<String> getInputTopics() {
+        return inputTopics;
+    }
+
+    public Map<String, String> getOutputTopics() {
+        return outputTopics;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getPlan() {
+        String executionPlan = "@config(async = 'true') define stream raw_rb_flow (src string, dst string, namespace_uuid string, bytes int);";
+        executionPlan += "from raw_rb_flow[namespace_uuid == '11111111'] select src, dst, bytes insert into rb_flow;";
+        executionPlan += this.plan;
+        return executionPlan;
+    }
+
     public void start(SiddhiManager siddhiManager) {
         this.siddhiManager = siddhiManager;
         this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getPlan());
@@ -48,16 +78,24 @@ public class ExecutionPlan {
 
                 executionPlanRuntime.addCallback(streamName, new QueryCallback() {
                     @Override
-                    public void receive(long l, Event[] events, Event[] events1) {
-                        for (Event event : events) {
-                            System.out.println(event.getData());
+                    public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                        for (Event event : inEvents) {
+                            Map<String, Object> result = new HashMap<>();
+
+                            int index = 0;
+                            for (Object object : event.getData()) {
+                                String columnName = attributes.get(index++).getName();
+                                result.put(columnName, object);
+                            }
+
+                            System.out.println("[" + getId() + "] " + result);
                         }
                     }
                 });
             }
 
             executionPlanRuntime.start();
-            log.info("Starting execution plan with id {} and plan {}", id, getPlan());
+            log.info("Started execution plan with id {} and plan {}", id, getPlan());
         } else {
             log.error("Siddhi is not initialized!");
         }
@@ -70,12 +108,5 @@ public class ExecutionPlan {
 
     public InputHandler getInputHandler() {
         return executionPlanRuntime.getInputHandler("raw_rb_flow");
-    }
-
-    public String getPlan() {
-        String executionPlan = "@config(async = 'true') define stream raw_rb_flow (src string, dst string, bytes int);";
-        executionPlan += "from raw_rb_flow[namespace_id == 11111111] select src, dst, bytes insert into rb_flow;";
-        executionPlan += this.plan;
-        return executionPlan;
     }
 }

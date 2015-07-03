@@ -19,21 +19,20 @@ import java.util.Map;
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
 
-    private Map<String, Map<String, Object>> rawQueries = new HashMap<>();
-    private List<ExecutionPlan> executionPlans;
+    private Map<String, ExecutionPlan> executionPlans;
     private SiddhiManager siddhiManager;
     private ObjectMapper mapper;
 
     public SiddhiHandler() {
         this.siddhiManager = new SiddhiManager();
-        this.executionPlans = new ArrayList<>();
+        this.executionPlans = new HashMap<>();
         this.mapper = new ObjectMapper();
     }
 
     public void stop() {
         log.info("Stopping down execution plans...");
 
-        for (ExecutionPlan executionPlan : executionPlans) {
+        for (ExecutionPlan executionPlan : executionPlans.values()) {
             executionPlan.stop();
         }
     }
@@ -43,33 +42,41 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         Map<String, Object> data = mapEvent.getData();
         String src = (String) data.get("src");
         String dst = (String) data.get("dst");
+        String namespace = (String) data.get("namespace_uuid");
         Integer bytes = (Integer) data.get("bytes");
 
-        for (ExecutionPlan executionPlan : executionPlans) {
-            executionPlan.getInputHandler().send(new Object[]{src, dst, bytes});
+        for (ExecutionPlan executionPlan : executionPlans.values()) {
+            executionPlan.getInputHandler().send(new Object[] { src, dst, namespace, bytes });
         }
     }
 
     @Override
     public void add(Map<String, Object> element) throws RestException {
-        String id = element.get("id").toString();
-        if (rawQueries.containsKey(id)) {
-            throw new RestException("Query with id " + id + " already exist");
-        } else {
-            ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
-            executionPlan.start(siddhiManager);
-            executionPlans.add(executionPlan);
+        if (element.containsKey("id")) {
+            String id = element.get("id").toString();
 
-            rawQueries.put(id, element);
-            log.info("New query added: {}", element);
+            if (executionPlans.containsKey(id)) {
+                throw new RestException("query with id " + id + " already exists");
+            } else {
+                ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
+                executionPlan.start(siddhiManager);
+                executionPlans.put(executionPlan.getId(), executionPlan);
+                log.info("New query added: {}", element);
+            }
+        } else {
+            throw new RestException("invalid rule");
         }
     }
 
     @Override
     public void remove(String id) throws NotFoundException, RestException {
-        if (rawQueries.remove(id) != null) {
+        ExecutionPlan executionPlan = executionPlans.get(id);
+
+        if (executionPlan != null) {
+            executionPlan.stop();
+            executionPlans.remove(id);
             log.info("Query with the id {} has been removed", id);
-            log.info("Current queries: {}", rawQueries);
+            log.info("Current queries: {}", executionPlans.keySet());
         } else {
             throw new NotFoundException("Query with the id " + id + " is not present");
         }
@@ -77,22 +84,15 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     @Override
     public void synchronize(List<Map<String, Object>> elements) throws RestException {
-        Map<String, Map<String, Object>> newQueries = new HashMap<>();
-
-        for (Map<String, Object> element : elements) {
-            String id = element.get("id").toString();
-            newQueries.put(id, element);
-        }
-
-        rawQueries = newQueries;
+        // TODO
     }
 
     @Override
     public String list() throws RestException {
         List<Map<String, Object>> listQueries = new ArrayList<>();
 
-        for (Map.Entry<String, Map<String, Object>> query : rawQueries.entrySet()) {
-            listQueries.add(query.getValue());
+        for (ExecutionPlan executionPlan : executionPlans.values()) {
+            listQueries.add(executionPlan.toMap());
         }
 
         try {
