@@ -39,14 +39,16 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     @Override
     public void onEvent(MapEvent mapEvent, long sequence, boolean endOfBatch) throws Exception {
-        Map<String, Object> data = mapEvent.getData();
-        String src = (String) data.get("src");
-        String dst = (String) data.get("dst");
-        String namespace = (String) data.get("namespace_uuid");
-        Integer bytes = (Integer) data.get("bytes");
+        if (!executionPlans.isEmpty()) {
+            Map<String, Object> data = mapEvent.getData();
+            String src = (String) data.get("src");
+            String dst = (String) data.get("dst");
+            String namespace = (String) data.get("namespace_uuid");
+            Integer bytes = (Integer) data.get("bytes");
 
-        for (ExecutionPlan executionPlan : executionPlans.values()) {
-            executionPlan.getInputHandler().send(new Object[] { src, dst, namespace, bytes });
+            for (ExecutionPlan executionPlan : executionPlans.values()) {
+                executionPlan.getInputHandler().send(new Object[]{src, dst, namespace, bytes});
+            }
         }
     }
 

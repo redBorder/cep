@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.ExecutionPlanRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
+import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.HashMap;
@@ -19,7 +19,6 @@ public class ExecutionPlan {
     private final List<String> inputTopics;
     private final Map<String, String> outputTopics;
     private final String plan, id;
-    private SiddhiManager siddhiManager;
     private ExecutionPlanRuntime executionPlanRuntime;
 
     public static ExecutionPlan fromMap(Map<String, Object> map) {
@@ -68,7 +67,6 @@ public class ExecutionPlan {
     }
 
     public void start(SiddhiManager siddhiManager) {
-        this.siddhiManager = siddhiManager;
         this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getPlan());
 
         if (executionPlanRuntime != null) {
@@ -76,10 +74,10 @@ public class ExecutionPlan {
                 final String streamName = entry.getKey();
                 final List<Attribute> attributes = executionPlanRuntime.getStreamDefinitionMap().get(streamName).getAttributeList();
 
-                executionPlanRuntime.addCallback(streamName, new QueryCallback() {
+                executionPlanRuntime.addCallback(streamName, new StreamCallback() {
                     @Override
-                    public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                        for (Event event : inEvents) {
+                    public void receive(Event[] events) {
+                        for (Event event : events) {
                             Map<String, Object> result = new HashMap<>();
 
                             int index = 0;
