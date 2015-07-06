@@ -6,11 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.ExecutionPlanRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +54,11 @@ public class ExecutionPlan {
     }
 
     public List<String> getInputTopics() {
-        return inputTopics;
+        return Collections.unmodifiableList(inputTopics);
     }
 
     public Map<String, String> getOutputTopics() {
-        return outputTopics;
+        return Collections.unmodifiableMap(outputTopics);
     }
 
     public String getId() {
@@ -66,6 +66,10 @@ public class ExecutionPlan {
     }
 
     public String getPlan() {
+        return this.plan;
+    }
+
+    private String getFullPlan() {
         String executionPlan = "@config(async = 'true') define stream raw_rb_flow (src string, dst string, namespace_uuid string, bytes int);";
         executionPlan += "from raw_rb_flow[namespace_uuid == '11111111'] select src, dst, bytes insert into rb_flow;";
         executionPlan += this.plan;
@@ -73,36 +77,17 @@ public class ExecutionPlan {
     }
 
     public void start(SiddhiManager siddhiManager) {
-        this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getPlan());
+        this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getFullPlan());
 
-        if (executionPlanRuntime != null) {
-            for (Map.Entry<String, String> entry : outputTopics.entrySet()) {
-                final String streamName = entry.getKey();
-                final List<Attribute> attributes = executionPlanRuntime.getStreamDefinitionMap().get(streamName).getAttributeList();
-
-                executionPlanRuntime.addCallback(streamName, new StreamCallback() {
-                    @Override
-                    public void receive(Event[] events) {
-                        for (Event event : events) {
-                            Map<String, Object> result = new HashMap<>();
-
-                            int index = 0;
-                            for (Object object : event.getData()) {
-                                String columnName = attributes.get(index++).getName();
-                                result.put(columnName, object);
-                            }
-
-                            System.out.println("[" + getId() + "] " + result);
-                        }
-                    }
-                });
-            }
-
-            executionPlanRuntime.start();
-            log.info("Started execution plan with id {} and plan {}", id, getPlan());
-        } else {
-            log.error("Siddhi is not initialized!");
+        for (Map.Entry<String, String> entry : outputTopics.entrySet()) {
+            String streamName = entry.getKey();
+            List<Attribute> attributes = executionPlanRuntime.getStreamDefinitionMap().get(streamName).getAttributeList();
+            StreamCallback streamCallback = new PrintCallback(getId(), streamName, attributes);
+            executionPlanRuntime.addCallback(streamName, streamCallback);
         }
+
+        executionPlanRuntime.start();
+        log.info("Started execution plan with id {} and plan {}", id, getPlan());
     }
 
     public void stop() {
