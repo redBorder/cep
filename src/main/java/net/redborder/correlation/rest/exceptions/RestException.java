@@ -1,4 +1,4 @@
-package net.redborder.correlation.rest;
+package net.redborder.correlation.rest.exceptions;
 
 public class RestException extends Exception {
     public RestException(String message) {

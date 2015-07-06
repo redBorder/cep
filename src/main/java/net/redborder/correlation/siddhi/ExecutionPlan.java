@@ -1,5 +1,7 @@
 package net.redborder.correlation.siddhi;
 
+import net.redborder.correlation.siddhi.exceptions.ExecutionPlanException;
+import net.redborder.correlation.siddhi.exceptions.TransformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.ExecutionPlanRuntime;
@@ -21,11 +23,15 @@ public class ExecutionPlan {
     private final String plan, id;
     private ExecutionPlanRuntime executionPlanRuntime;
 
-    public static ExecutionPlan fromMap(Map<String, Object> map) {
+    public static ExecutionPlan fromMap(Map<String, Object> map) throws ExecutionPlanException {
         List<String> inputTopics = (List<String>) map.get("input");
         Map<String, String> outputTopics = (Map<String, String>) map.get("output");
         String id = (String) map.get("id");
         String plan = (String) map.get("executionPlan");
+
+        if (inputTopics == null || outputTopics == null || id == null || plan == null) {
+            throw new TransformException("required field not found");
+        }
 
         return new ExecutionPlan(id, inputTopics, outputTopics, plan);
     }

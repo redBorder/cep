@@ -1,5 +1,6 @@
 package net.redborder.correlation.rest;
 
+import net.redborder.correlation.rest.exceptions.RestException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ public class Resource {
         log.info("List request");
 
         try {
-            String list = listener.list();
+            List<Map<String, Object>> list = listener.list();
             return Response.ok().entity(list).build();
         } catch (Exception e) {
             e.printStackTrace();

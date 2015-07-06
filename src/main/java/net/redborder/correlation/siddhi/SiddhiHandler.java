@@ -2,31 +2,26 @@ package net.redborder.correlation.siddhi;
 
 import com.lmax.disruptor.EventHandler;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
-import net.redborder.correlation.rest.RestException;
 import net.redborder.correlation.rest.RestListener;
-import org.codehaus.jackson.map.ObjectMapper;
+import net.redborder.correlation.rest.exceptions.*;
+import net.redborder.correlation.siddhi.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.SiddhiManager;
+import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
 import javax.ws.rs.NotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
 
     private Map<String, ExecutionPlan> executionPlans;
     private SiddhiManager siddhiManager;
-    private ObjectMapper mapper;
 
     public SiddhiHandler() {
         this.siddhiManager = new SiddhiManager();
         this.executionPlans = new HashMap<>();
-        this.mapper = new ObjectMapper();
     }
 
     public void stop() {
@@ -38,7 +33,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     public Map<String, ExecutionPlan> getExecutionPlans() {
-        return executionPlans;
+        return Collections.unmodifiableMap(executionPlans);
     }
 
     @Override
@@ -58,19 +53,25 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     @Override
     public void add(Map<String, Object> element) throws RestException {
-        if (element.containsKey("id")) {
-            String id = element.get("id").toString();
+        try {
+            ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
+            add(executionPlan);
+        } catch (ExecutionPlanException e) {
+            throw new RestInvalidException(e.getMessage(), e);
+        }
+    }
 
-            if (executionPlans.containsKey(id)) {
-                throw new RestException("query with id " + id + " already exists");
-            } else {
-                ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
+    public void add(ExecutionPlan executionPlan) throws ExecutionPlanException {
+        if (executionPlans.containsKey(executionPlan.getId())) {
+            throw new AlreadyExistsException("execution plan with id " + executionPlan.getId() + " already exists");
+        } else {
+            try {
                 executionPlan.start(siddhiManager);
                 executionPlans.put(executionPlan.getId(), executionPlan);
-                log.info("New query added: {}", element);
+                log.info("New execution plan added: {}", executionPlan.toMap());
+            } catch (SiddhiParserException e) {
+                throw new InvalidExecutionPlanException("invalid siddhi execution plan", e);
             }
-        } else {
-            throw new RestException("invalid rule");
         }
     }
 
@@ -81,10 +82,10 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         if (executionPlan != null) {
             executionPlan.stop();
             executionPlans.remove(id);
-            log.info("Query with the id {} has been removed", id);
+            log.info("Execution plan with the id {} has been removed", id);
             log.info("Current queries: {}", executionPlans.keySet());
         } else {
-            throw new NotFoundException("Query with the id " + id + " is not present");
+            throw new NotFoundException("Execution plan with id " + id + " is not present");
         }
     }
 
@@ -93,36 +94,33 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         Map<String, ExecutionPlan> newExecutionPlans = new HashMap<>();
 
         for (Map<String, Object> element : elements) {
-            ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
-
-            if (newExecutionPlans.containsKey(executionPlan.getId())) {
-                throw new RestException("you can't specify two or more queries with the same id");
-            }
-
             try {
-                executionPlan.start(siddhiManager);
-            } catch (Exception e) {
-                throw new RestException("couldn't creating execution plan for query " + executionPlan.getId(), e);
-            }
+                ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
 
-            newExecutionPlans.put(executionPlan.getId(), executionPlan);
+                if (newExecutionPlans.containsKey(executionPlan.getId())) {
+                    throw new RestInvalidException("you can't specify two or more execution plans with the same id");
+                }
+
+                executionPlan.start(siddhiManager);
+                newExecutionPlans.put(executionPlan.getId(), executionPlan);
+            } catch (ExecutionPlanException e) {
+                throw new RestInvalidException(e.getMessage(), e);
+            } catch (SiddhiParserException e) {
+                throw new RestInvalidException("invalid siddhi rule: " + e.getMessage(), e);
+            }
         }
 
         executionPlans = newExecutionPlans;
     }
 
     @Override
-    public String list() throws RestException {
+    public List<Map<String, Object>> list() throws RestException {
         List<Map<String, Object>> listQueries = new ArrayList<>();
 
         for (ExecutionPlan executionPlan : executionPlans.values()) {
             listQueries.add(executionPlan.toMap());
         }
 
-        try {
-            return mapper.writeValueAsString(listQueries);
-        } catch (IOException e) {
-            throw new RestException("Couldn't serialize list of queries", e);
-        }
+        return listQueries;
     }
 }
