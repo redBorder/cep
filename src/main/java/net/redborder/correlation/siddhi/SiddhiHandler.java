@@ -3,14 +3,17 @@ package net.redborder.correlation.siddhi;
 import com.lmax.disruptor.EventHandler;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.rest.RestListener;
-import net.redborder.correlation.rest.exceptions.*;
-import net.redborder.correlation.siddhi.exceptions.*;
+import net.redborder.correlation.rest.exceptions.RestException;
+import net.redborder.correlation.rest.exceptions.RestInvalidException;
+import net.redborder.correlation.rest.exceptions.RestNotFoundException;
+import net.redborder.correlation.siddhi.exceptions.AlreadyExistsException;
+import net.redborder.correlation.siddhi.exceptions.ExecutionPlanException;
+import net.redborder.correlation.siddhi.exceptions.InvalidExecutionPlanException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
-import javax.ws.rs.NotFoundException;
 import java.util.*;
 
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
@@ -76,7 +79,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     @Override
-    public void remove(String id) throws NotFoundException, RestException {
+    public void remove(String id) throws RestException {
         ExecutionPlan executionPlan = executionPlans.get(id);
 
         if (executionPlan != null) {
@@ -85,7 +88,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             log.info("Execution plan with the id {} has been removed", id);
             log.info("Current queries: {}", executionPlans.keySet());
         } else {
-            throw new NotFoundException("Execution plan with id " + id + " is not present");
+            throw new RestNotFoundException("Execution plan with id " + id + " is not present");
         }
     }
 

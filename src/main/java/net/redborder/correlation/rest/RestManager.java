@@ -45,6 +45,10 @@ public class RestManager {
         log.info("HTTP server started");
     }
 
+    public static boolean isStarted() {
+        return server.isStarted();
+    }
+
     public static void stopServer() {
         if (server != null) {
             server.shutdown();

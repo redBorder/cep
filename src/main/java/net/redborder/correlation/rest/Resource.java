@@ -1,6 +1,8 @@
 package net.redborder.correlation.rest;
 
 import net.redborder.correlation.rest.exceptions.RestException;
+import net.redborder.correlation.rest.exceptions.RestInvalidException;
+import net.redborder.correlation.rest.exceptions.RestNotFoundException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,10 @@ public class Resource {
         try {
             listener.add(parseMap(json));
             return Response.ok().build();
-        } catch (Exception e) {
+        } catch (RestInvalidException e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST).entity(toMap(e)).build();
+        } catch (RestException e) {
             e.printStackTrace();
             return Response.serverError().entity(toMap(e)).build();
         }
@@ -67,10 +72,10 @@ public class Resource {
         try {
             listener.remove(id);
             return Response.ok().build();
-        } catch (NotFoundException e) {
+        } catch (RestNotFoundException e) {
             e.printStackTrace();
             return Response.status(Response.Status.NOT_FOUND).entity(toMap(e)).build();
-        } catch (Exception e) {
+        } catch (RestException e) {
             e.printStackTrace();
             return Response.serverError().entity(toMap(e)).build();
         }
@@ -97,7 +102,10 @@ public class Resource {
         try {
             listener.synchronize(parseList(json));
             return Response.ok().build();
-        } catch (Exception e) {
+        } catch (RestInvalidException e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST).entity(toMap(e)).build();
+        } catch (RestException e) {
             e.printStackTrace();
             return Response.serverError().entity(toMap(e)).build();
         }
@@ -120,7 +128,7 @@ public class Resource {
         try {
             List<Map<String, Object>> list = listener.list();
             return Response.ok().entity(list).build();
-        } catch (Exception e) {
+        } catch (RestException e) {
             e.printStackTrace();
             return Response.serverError().entity(toMap(e)).build();
         }
@@ -135,7 +143,7 @@ public class Resource {
             Map<String, Object> result = mapper.readValue(str, Map.class);
             return result;
         } catch (IOException e) {
-            throw new RestException("couldn't parse json", e);
+            throw new RestInvalidException("couldn't parse json", e);
         }
     }
 
@@ -144,7 +152,7 @@ public class Resource {
             List<Map<String, Object>> result = mapper.readValue(str, List.class);
             return result;
         } catch (IOException e) {
-            throw new RestException("couldn't parse json", e);
+            throw new RestInvalidException("couldn't parse json", e);
         }
     }
 

@@ -3,13 +3,13 @@ package net.redborder.correlation.siddhi;
 import junit.framework.TestCase;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.rest.exceptions.RestException;
+import net.redborder.correlation.rest.exceptions.RestNotFoundException;
 import net.redborder.correlation.siddhi.exceptions.ExecutionPlanException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 
-import javax.ws.rs.NotFoundException;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -110,8 +110,8 @@ public class SiddhiHandlerTest extends TestCase {
         assertTrue(siddhiHandler.getExecutionPlans().isEmpty());
     }
 
-    @Test(expected = NotFoundException.class)
-    public void removeNotPresent() throws NotFoundException, RestException {
+    @Test(expected = RestNotFoundException.class)
+    public void removeNotPresent() throws RestException {
         SiddhiHandler siddhiHandler = new SiddhiHandler();
 
         // Remove it
