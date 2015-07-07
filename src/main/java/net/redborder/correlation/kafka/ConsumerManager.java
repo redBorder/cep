@@ -1,12 +1,20 @@
 package net.redborder.correlation.kafka;
 
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.dsl.Disruptor;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import net.redborder.correlation.kafka.disruptor.EventProducer;
+import net.redborder.correlation.kafka.disruptor.MapEvent;
+import net.redborder.correlation.kafka.disruptor.MapEventFactory;
+import net.redborder.correlation.kafka.parsers.Parser;
 import net.redborder.correlation.util.ConfigData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,10 +22,40 @@ import java.util.concurrent.Executors;
 public class ConsumerManager {
     private static final Logger log = LoggerFactory.getLogger(ConsumerManager.class);
 
+    private final List<Topic> topics;
+    private final List<Topic> unmodifiableTopics;
     private ConsumerConnector consumer;
     private Map<String, ExecutorService> executors;
 
-    public ConsumerManager() {
+    public ConsumerManager(EventHandler eventHandler) {
+        Integer ringBufferSize = ConfigData.getRingBufferSize();
+        topics = new ArrayList<>();
+        unmodifiableTopics = Collections.unmodifiableList(topics);
+
+        for (Map.Entry<String, String> entry : ConfigData.getTopics().entrySet()) {
+            String parserName = entry.getValue();
+
+            try {
+                // Get parser from config
+                Class parserClass = Class.forName(parserName);
+                Constructor<Parser> constructor = parserClass.getConstructor();
+                Parser parser = constructor.newInstance();
+
+                // Create the disruptor for this topic and start it
+                Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ringBufferSize, Executors.newCachedThreadPool());
+                disruptor.handleEventsWith(eventHandler);
+                disruptor.start();
+
+                // Create topic entry
+                /* TODO Discover partitions using ZK */
+                topics.add(new Topic(entry.getKey(), 4, parser, new EventProducer(disruptor.getRingBuffer())));
+            } catch (ClassNotFoundException e) {
+                log.error("Couldn't find the class associated with the parser " + parserName);
+            } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                log.error("Couldn't create the instance associated with the parser " + parserName, e);
+            }
+        }
+
         Properties props = new Properties();
         props.put("auto.commit.enable", "true");
         props.put("zookeeper.connect", ConfigData.getZkConnect());
@@ -26,11 +64,10 @@ public class ConsumerManager {
         props.put("zookeeper.sync.time.ms", "200");
         props.put("auto.commit.interval.ms", "60000");
         props.put("auto.offset.reset", "largest");
+
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
         executors = new LinkedHashMap<>();
-    }
 
-    public void start(List<Topic> topics) {
         Map<String, Integer> topicsHash = new HashMap<>();
         log.info("Starting with topics {}", topics);
 
@@ -50,6 +87,10 @@ public class ConsumerManager {
 
             executors.put(topic.getName(), executor);
         }
+    }
+
+    public List<Topic> getTopics() {
+        return unmodifiableTopics;
     }
 
     public void shutdown() {

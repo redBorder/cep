@@ -1,6 +1,8 @@
 package net.redborder.correlation.siddhi;
 
 import com.lmax.disruptor.EventHandler;
+import net.redborder.correlation.receivers.ConsoleReceiver;
+import net.redborder.correlation.receivers.EventReceiver;
 import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.rest.RestListener;
 import net.redborder.correlation.rest.exceptions.RestException;
@@ -21,8 +23,16 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     private Map<String, ExecutionPlan> executionPlans;
     private SiddhiManager siddhiManager;
+    private SiddhiCallback siddhiCallback;
+
+    public SiddhiHandler(EventReceiver eventReceiver) {
+        this.siddhiCallback = new SiddhiCallback(eventReceiver);
+        this.siddhiManager = new SiddhiManager();
+        this.executionPlans = new HashMap<>();
+    }
 
     public SiddhiHandler() {
+        this.siddhiCallback = new SiddhiCallback(new ConsoleReceiver());
         this.siddhiManager = new SiddhiManager();
         this.executionPlans = new HashMap<>();
     }
@@ -69,7 +79,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             throw new AlreadyExistsException("execution plan with id " + executionPlan.getId() + " already exists");
         } else {
             try {
-                executionPlan.start(siddhiManager);
+                executionPlan.start(siddhiManager, siddhiCallback);
                 executionPlans.put(executionPlan.getId(), executionPlan);
                 log.info("New execution plan added: {}", executionPlan.toMap());
             } catch (SiddhiParserException e) {
@@ -104,7 +114,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
                     throw new RestInvalidException("you can't specify two or more execution plans with the same id");
                 }
 
-                executionPlan.start(siddhiManager);
+                executionPlan.start(siddhiManager, siddhiCallback);
                 newExecutionPlans.put(executionPlan.getId(), executionPlan);
             } catch (ExecutionPlanException e) {
                 throw new RestInvalidException(e.getMessage(), e);

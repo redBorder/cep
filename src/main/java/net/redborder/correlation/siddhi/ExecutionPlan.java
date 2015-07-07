@@ -89,13 +89,14 @@ public class ExecutionPlan {
         return executionPlan;
     }
 
-    public void start(SiddhiManager siddhiManager) {
+    public void start(SiddhiManager siddhiManager, SiddhiCallback siddhiCallback) {
         this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getFullPlan());
 
         for (Map.Entry<String, String> entry : outputTopics.entrySet()) {
             String streamName = entry.getKey();
+            String topic = entry.getValue();
             List<Attribute> attributes = executionPlanRuntime.getStreamDefinitionMap().get(streamName).getAttributeList();
-            StreamCallback streamCallback = new PrintCallback(getId(), streamName, attributes);
+            StreamCallback streamCallback = siddhiCallback.getCallback(getId(), streamName, topic, attributes);
             executionPlanRuntime.addCallback(streamName, streamCallback);
         }
 
