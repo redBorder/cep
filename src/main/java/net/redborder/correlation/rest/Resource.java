@@ -37,19 +37,25 @@ public class Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response add(String json) {
         RestListener listener = RestManager.getListener();
-        log.info("Add request with json: {}", json);
+        Response response;
 
-        // Check if the listener accepted the data
         try {
+            log.info("Add request with json: {}", json);
             listener.add(parseMap(json));
-            return Response.ok().build();
+            response = Response.ok().build();
         } catch (RestInvalidException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.BAD_REQUEST).entity(toMap(e)).build();
-        } catch (RestException e) {
+            response = Response.status(Response.Status.BAD_REQUEST)
+                    .entity(toMap(e, Response.Status.BAD_REQUEST))
+                    .build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.serverError().entity(toMap(e)).build();
+            response = Response.serverError()
+                    .entity(toMap(e, Response.Status.INTERNAL_SERVER_ERROR))
+                    .build();
         }
+
+        return response;
     }
 
     /**
@@ -66,19 +72,26 @@ public class Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response remove(@PathParam("id") String id) {
         RestListener listener = RestManager.getListener();
-        log.info("Remove request with id: {}", id);
+        Response response;
 
         // Check if the listener accepted the operation
         try {
+            log.info("Remove request with id: {}", id);
             listener.remove(id);
-            return Response.ok().build();
+            response = Response.ok().build();
         } catch (RestNotFoundException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.NOT_FOUND).entity(toMap(e)).build();
-        } catch (RestException e) {
+            response = Response.status(Response.Status.NOT_FOUND)
+                    .entity(toMap(e, Response.Status.NOT_FOUND))
+                    .build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.serverError().entity(toMap(e)).build();
+            response = Response.serverError()
+                    .entity(toMap(e, Response.Status.INTERNAL_SERVER_ERROR))
+                    .build();
         }
+
+        return response;
     }
 
     /**
@@ -96,19 +109,25 @@ public class Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response synchronize(String json) {
         RestListener listener = RestManager.getListener();
-        log.info("Synchronize request with json: {}", json);
+        Response response;
 
-        // Check if the listener accepted the operation
         try {
+            log.info("Synchronize request with json: {}", json);
             listener.synchronize(parseList(json));
-            return Response.ok().build();
+            response = Response.ok().build();
         } catch (RestInvalidException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.BAD_REQUEST).entity(toMap(e)).build();
-        } catch (RestException e) {
+            response = Response.status(Response.Status.BAD_REQUEST)
+                    .entity(toMap(e, Response.Status.BAD_REQUEST))
+                    .build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.serverError().entity(toMap(e)).build();
+            response = Response.serverError()
+                    .entity(toMap(e, Response.Status.INTERNAL_SERVER_ERROR))
+                    .build();
         }
+
+        return response;
     }
 
     /**
@@ -123,15 +142,20 @@ public class Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() {
         RestListener listener = RestManager.getListener();
-        log.info("List request");
+        Response response;
 
         try {
+            log.info("List request");
             List<Map<String, Object>> list = listener.list();
-            return Response.ok().entity(list).build();
-        } catch (RestException e) {
+            response = Response.ok().entity(list).build();
+        } catch (Exception e) {
             e.printStackTrace();
-            return Response.serverError().entity(toMap(e)).build();
+            response = Response.serverError()
+                    .entity(toMap(e, Response.Status.INTERNAL_SERVER_ERROR))
+                    .build();
         }
+
+        return response;
     }
 
     /**
@@ -156,9 +180,9 @@ public class Resource {
         }
     }
 
-    private Map<String, Object> toMap(Throwable e) {
+    private Map<String, Object> toMap(Throwable e, Response.Status status) {
         Map<String, Object> result = new HashMap<>();
-        result.put("status", 500);
+        result.put("status", status.getStatusCode());
         result.put("message", e.getMessage());
         return result;
     }
