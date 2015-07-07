@@ -70,6 +70,26 @@ public class ResourceTest extends JerseyTest {
     }
 
     @Test
+    public void addInvalidType() throws Exception {
+        // Create an invalid rule that will be added
+        Map<String, Object> elementMap = new HashMap<>();
+        Map<String, String> outputTopics = new HashMap<>();
+        outputTopics.put("outputStream", "rb_alert");
+        elementMap.put("id", "testID");
+        elementMap.put("input", 2); // INVALID TYPE
+        elementMap.put("output", outputTopics);
+        elementMap.put("executionPlan", "from rb_flow select src, bytes insert into outputStream;");
+
+        String json = objectMapper.writeValueAsString(elementMap);
+
+        Entity<String> entity = Entity.json(json);
+        Response response = target("/").request(MediaType.APPLICATION_JSON_TYPE).post(entity);
+        int statusCode = response.getStatus();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), statusCode);
+    }
+
+    @Test
     public void addNoJSON() throws Exception {
         String json = "NO_JSON_STRING";
 
@@ -153,6 +173,38 @@ public class ResourceTest extends JerseyTest {
         outputTopics.put("outputStream", "rb_alert");
         elementMap.put("id", "rule_list_one");
         elementMap.put("input", Arrays.asList("rb_flow"));
+        elementMap.put("output", outputTopics);
+        elementMap.put("executionPlan", "from rb_flow select src, bytes insert into outputStream;");
+        listOfRules.add(elementMap);
+
+        Map<String, Object> elementMap2 = new HashMap<>();
+        Map<String, String> outputTopics2 = new HashMap<>();
+        outputTopics2.put("outputStream", "rb_alert");
+        // elementMap2.put("id", "rule_list_two");
+        elementMap2.put("input", Arrays.asList("rb_flow"));
+        elementMap2.put("output", outputTopics2);
+        elementMap2.put("executionPlan", "from rb_flow select src, bytes insert into outputStream;");
+        listOfRules.add(elementMap2);
+
+        String json = objectMapper.writeValueAsString(listOfRules);
+
+        Entity<String> entity = Entity.json(json);
+        Response response = target("/synchronize").request(MediaType.APPLICATION_JSON_TYPE).post(entity);
+        int statusCode = response.getStatus();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), statusCode);
+    }
+
+    @Test
+    public void synchronizeInvalidType() throws Exception {
+        // Create a set of rules that will be added
+        List<Map<String, Object>> listOfRules = new ArrayList<>();
+
+        Map<String, Object> elementMap = new HashMap<>();
+        Map<String, String> outputTopics = new HashMap<>();
+        outputTopics.put("outputStream", "rb_alert");
+        elementMap.put("id", "rule_list_one");
+        elementMap.put("input", 2); // INVALID TYPE
         elementMap.put("output", outputTopics);
         elementMap.put("executionPlan", "from rb_flow select src, bytes insert into outputStream;");
         listOfRules.add(elementMap);

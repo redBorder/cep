@@ -24,16 +24,29 @@ public class ExecutionPlan {
     private ExecutionPlanRuntime executionPlanRuntime;
 
     public static ExecutionPlan fromMap(Map<String, Object> map) throws ExecutionPlanException {
-        List<String> inputTopics = (List<String>) map.get("input");
-        Map<String, String> outputTopics = (Map<String, String>) map.get("output");
-        String id = (String) map.get("id");
-        String plan = (String) map.get("executionPlan");
-
-        if (inputTopics == null || outputTopics == null || id == null || plan == null) {
-            throw new TransformException("required field not found");
-        }
+        List<String> inputTopics = getField(map, "input", List.class);
+        Map<String, String> outputTopics = getField(map, "output", Map.class);
+        String id = getField(map, "id", String.class);
+        String plan = getField(map, "executionPlan", String.class);
 
         return new ExecutionPlan(id, inputTopics, outputTopics, plan);
+    }
+
+    private static <T> T getField(Map<String, Object> map, String fieldName, Class<T> type) throws ExecutionPlanException {
+        T result;
+
+        try {
+            Object fromMap = map.get(fieldName);
+            result = (T) type.cast(fromMap);
+
+            if (result == null) {
+                throw new TransformException("required field " + fieldName + " not found");
+            }
+        } catch (ClassCastException e) {
+            throw new TransformException("invalid type for field " + fieldName, e);
+        }
+
+        return result;
     }
 
     public ExecutionPlan(String id, List<String> inputTopics,

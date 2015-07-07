@@ -64,4 +64,19 @@ public class ExecutionPlanTest extends TestCase {
         // Create the execution plan
         ExecutionPlan.fromMap(executionPlanMap);
     }
+
+    @Test(expected = TransformException.class)
+    public void createsFromMapInvalidTypes() throws ExecutionPlanException {
+        // Build a map with the execution plan data
+        Map<String, Object> executionPlanMap = new HashMap<>();
+        Map<String, String> outputTopics = new HashMap<>();
+        outputTopics.put("testOutput", "rb_alert");
+        executionPlanMap.put("id", "invalid_rule");
+        executionPlanMap.put("input", 2); // INVALID
+        executionPlanMap.put("output", outputTopics);
+        executionPlanMap.put("executionPlan", "from rb_flow select src insert into testOutput");
+
+        // Create the execution plan
+        ExecutionPlan.fromMap(executionPlanMap);
+    }
 }
