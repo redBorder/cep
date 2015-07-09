@@ -17,6 +17,10 @@ public class ConfigData {
         return configFile.getOrDefault("kafka_brokers", "127.0.0.1:9092");
     }
 
+    public static String getStateFile() {
+        return configFile.getOrDefault("state_file", null);
+    }
+
     public static String getRESTURI() {
         return configFile.getOrDefault("rest_uri", "http://localhost:8888/myapp/");
     }

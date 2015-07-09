@@ -20,17 +20,19 @@ public class ExecutionPlanTest extends TestCase {
         Map<String, String> outputTopics = new HashMap<>();
         outputTopics.put("testOutput", "rb_alert");
         List<String> inputTopics = Arrays.asList("rb_flow", "rb_event");
-        String id = "testID";
         String plan = "from rb_flow select src insert into testOutput";
+        String id = "testID";
+        int version = 0;
 
         // Create the execution plan
-        ExecutionPlan executionPlan = new ExecutionPlan(id, inputTopics, outputTopics, plan);
+        ExecutionPlan executionPlan = new ExecutionPlan(id, version = 0, inputTopics, outputTopics, plan);
 
         // Check it values
         assertEquals(id, executionPlan.getId());
-        assertEquals(inputTopics, executionPlan.getInputTopics());
-        assertEquals(outputTopics, executionPlan.getOutputTopics());
-        assertEquals(plan, executionPlan.getPlan());
+        assertEquals(version, executionPlan.getVersion());
+        assertEquals(inputTopics, executionPlan.getInput());
+        assertEquals(outputTopics, executionPlan.getOutput());
+        assertEquals(plan, executionPlan.getExecutionPlan());
     }
 
     @Test

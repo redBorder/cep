@@ -11,7 +11,7 @@ import net.redborder.correlation.util.ConfigData;
 public class CorrelationService {
     public static void main(String[] args) {
         // ProducerManager is in charge of emitting messages from this application to kafka
-        // The KafkaReceiver wrapps the producer manager in order to be used by siddhi handler
+        // The KafkaReceiver wraps the producer manager in order to be used by siddhi handler
         ProducerManager producerManager = new ProducerManager();
         EventReceiver eventReceiver = new KafkaReceiver(producerManager);
 

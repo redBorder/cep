@@ -8,7 +8,6 @@ import net.redborder.correlation.siddhi.exceptions.ExecutionPlanException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.wso2.siddhi.core.stream.input.InputHandler;
 
 import java.util.*;
 
@@ -150,6 +149,70 @@ public class SiddhiHandlerTest extends TestCase {
 
         // Check that both have been added
         assertEquals(2, siddhiHandler.getExecutionPlans().size());
+    }
+
+    @Test
+    public void synchronizeRemoveNotUsed() throws RestException {
+        SiddhiHandler siddhiHandler = new SiddhiHandler();
+
+        // Build the list of execution plans
+        List<Map<String, Object>> executionPlans = new ArrayList<>();
+
+        // Build the first execution plan
+        Map<String, Object> executionPlanMap = new HashMap<>();
+        Map<String, String> outputTopics = new HashMap<>();
+        outputTopics.put("testOutput", "rb_alert");
+        executionPlanMap.put("id", "testID");
+        executionPlanMap.put("input", Arrays.asList("rb_flow", "rb_event"));
+        executionPlanMap.put("output", outputTopics);
+        executionPlanMap.put("executionPlan", "from rb_flow select src insert into testOutput");
+        executionPlans.add(executionPlanMap);
+
+        // Build the second execution plan
+        Map<String, Object> executionPlanMap2 = new HashMap<>();
+        Map<String, String> outputTopics2 = new HashMap<>();
+        outputTopics2.put("testOutput", "rb_alert");
+        executionPlanMap2.put("id", "testID2");
+        executionPlanMap2.put("input", Arrays.asList("rb_flow", "rb_event"));
+        executionPlanMap2.put("output", outputTopics2);
+        executionPlanMap2.put("executionPlan", "from rb_flow select bytes insert into testOutput");
+        executionPlans.add(executionPlanMap2);
+
+        // Build third execution plan
+        Map<String, Object> executionPlanMap3 = new HashMap<>();
+        Map<String, String> outputTopics3 = new HashMap<>();
+        outputTopics3.put("testOutput", "rb_alert");
+        executionPlanMap3.put("id", "testID3");
+        executionPlanMap3.put("input", Arrays.asList("rb_flow", "rb_event"));
+        executionPlanMap3.put("output", outputTopics3);
+        executionPlanMap3.put("executionPlan", "from rb_flow select bytes insert into testOutput");
+        executionPlans.add(executionPlanMap3);
+
+        // Add both to siddhiHandler
+        siddhiHandler.synchronize(executionPlans);
+
+        // Build the list of execution plans
+        executionPlans = new ArrayList<>();
+
+        // Now add three more execution plans
+        executionPlanMap2.put("id", "testID4");
+        executionPlanMap3.put("id", "testID3");
+        executionPlanMap3.put("version", 1);
+        executionPlans.add(executionPlanMap);
+        executionPlans.add(executionPlanMap2);
+        executionPlans.add(executionPlanMap3);
+
+        // Synchronize again
+        siddhiHandler.synchronize(executionPlans);
+
+        // The expected set of execution plans ids
+        Set<String> expectedIds = new HashSet<>();
+        expectedIds.add("testID");
+        expectedIds.add("testID3");
+        expectedIds.add("testID4");
+
+        // Check that both have been added
+        assertEquals(expectedIds, siddhiHandler.getExecutionPlans().keySet());
     }
 
     @Test(expected = RestException.class)
@@ -296,8 +359,6 @@ public class SiddhiHandlerTest extends TestCase {
         // Create mocks
         ExecutionPlan executionPlanMock = mock(ExecutionPlan.class);
         when(executionPlanMock.getId()).thenReturn("testMockID");
-        InputHandler inputHandlerMock = mock(InputHandler.class);
-        when(executionPlanMock.getInputHandler()).thenReturn(inputHandlerMock);
 
         // Create the handler and add the execution plan mock
         SiddhiHandler siddhiHandler = new SiddhiHandler();
@@ -309,6 +370,7 @@ public class SiddhiHandlerTest extends TestCase {
         dataMap.put("dst", "2.2.2.2");
         dataMap.put("namespace_uuid", "11111111");
         dataMap.put("bytes", 128);
+        dataMap.put("pkts", 10);
         MapEvent mapEventStub = new MapEvent();
         mapEventStub.setData(dataMap);
 
@@ -316,6 +378,6 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.onEvent(mapEventStub, 1, true);
 
         // Checks if send was called
-        verify(inputHandlerMock).send(new Object[] { "1.1.1.1", "2.2.2.2", "11111111", 128 });
+        verify(executionPlanMock).send(new Object[] { "1.1.1.1", "2.2.2.2", "11111111", 128, 10 });
     }
 }

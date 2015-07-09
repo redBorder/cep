@@ -1,9 +1,9 @@
 package net.redborder.correlation.siddhi;
 
 import com.lmax.disruptor.EventHandler;
+import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.receivers.ConsoleReceiver;
 import net.redborder.correlation.receivers.EventReceiver;
-import net.redborder.correlation.kafka.disruptor.MapEvent;
 import net.redborder.correlation.rest.RestListener;
 import net.redborder.correlation.rest.exceptions.RestException;
 import net.redborder.correlation.rest.exceptions.RestInvalidException;
@@ -11,11 +11,19 @@ import net.redborder.correlation.rest.exceptions.RestNotFoundException;
 import net.redborder.correlation.siddhi.exceptions.AlreadyExistsException;
 import net.redborder.correlation.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.correlation.siddhi.exceptions.InvalidExecutionPlanException;
+import net.redborder.correlation.util.ConfigData;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.SiddhiManager;
+import org.wso2.siddhi.extension.timeseries.LinearRegressionForecastStreamProcessor;
 import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
@@ -24,17 +32,18 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private Map<String, ExecutionPlan> executionPlans;
     private SiddhiManager siddhiManager;
     private SiddhiCallback siddhiCallback;
+    private ObjectMapper objectMapper;
 
     public SiddhiHandler(EventReceiver eventReceiver) {
         this.siddhiCallback = new SiddhiCallback(eventReceiver);
-        this.siddhiManager = new SiddhiManager();
         this.executionPlans = new HashMap<>();
+        this.objectMapper = new ObjectMapper();
+        this.siddhiManager = new SiddhiManager();
+        this.siddhiManager.setExtension("timeseries:forecast", LinearRegressionForecastStreamProcessor.class);
     }
 
     public SiddhiHandler() {
-        this.siddhiCallback = new SiddhiCallback(new ConsoleReceiver());
-        this.siddhiManager = new SiddhiManager();
-        this.executionPlans = new HashMap<>();
+        this(new ConsoleReceiver());
     }
 
     public void stop() {
@@ -57,9 +66,10 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             String dst = (String) data.get("dst");
             String namespace = (String) data.get("namespace_uuid");
             Integer bytes = (Integer) data.get("bytes");
+            Integer pkts = (Integer) data.get("pkts");
 
             for (ExecutionPlan executionPlan : executionPlans.values()) {
-                executionPlan.getInputHandler().send(new Object[]{src, dst, namespace, bytes});
+                executionPlan.send(new Object[]{src, dst, namespace, bytes, pkts});
             }
         }
     }
@@ -75,16 +85,28 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     public void add(ExecutionPlan executionPlan) throws ExecutionPlanException {
-        if (executionPlans.containsKey(executionPlan.getId())) {
-            throw new AlreadyExistsException("execution plan with id " + executionPlan.getId() + " already exists");
-        } else {
-            try {
-                executionPlan.start(siddhiManager, siddhiCallback);
-                executionPlans.put(executionPlan.getId(), executionPlan);
-                log.info("New execution plan added: {}", executionPlan.toMap());
-            } catch (SiddhiParserException e) {
-                throw new InvalidExecutionPlanException("invalid siddhi execution plan", e);
+        ExecutionPlan present = executionPlans.get(executionPlan.getId());
+
+        if (present != null) {
+            if (present.getVersion() >= executionPlan.getVersion()) {
+                throw new AlreadyExistsException("execution plan with id " + executionPlan.getId() + " already exists with an equal or greater version");
+            } else {
+                try {
+                    remove(executionPlan.getId());
+                } catch (RestException e) {
+                    log.error("Weird! Execution plan id {} does not exists but it should!", executionPlan.getId(), e);
+                }
             }
+        }
+
+        try {
+            executionPlan.start(siddhiManager, siddhiCallback);
+            executionPlans.put(executionPlan.getId(), executionPlan);
+            save();
+
+            log.info("New execution plan added: {}", executionPlan.toMap());
+        } catch (SiddhiParserException e) {
+            throw new InvalidExecutionPlanException("invalid siddhi execution plan", e);
         }
     }
 
@@ -95,6 +117,8 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         if (executionPlan != null) {
             executionPlan.stop();
             executionPlans.remove(id);
+            save();
+
             log.info("Execution plan with the id {} has been removed", id);
             log.info("Current queries: {}", executionPlans.keySet());
         } else {
@@ -105,17 +129,18 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     @Override
     public void synchronize(List<Map<String, Object>> elements) throws RestException {
         Map<String, ExecutionPlan> newExecutionPlans = new HashMap<>();
+        Set<String> executionPlanstoKeep = new TreeSet<>();
 
+        // Check that all the execution plans are valid
         for (Map<String, Object> element : elements) {
             try {
                 ExecutionPlan executionPlan = ExecutionPlan.fromMap(element);
-
-                if (newExecutionPlans.containsKey(executionPlan.getId())) {
-                    throw new RestInvalidException("you can't specify two or more execution plans with the same id");
+                if (!newExecutionPlans.containsKey(executionPlan.getId())) {
+                    siddhiManager.validateExecutionPlan(executionPlan.getFullExecutionPlan());
+                    newExecutionPlans.put(executionPlan.getId(), executionPlan);
+                } else {
+                    throw new AlreadyExistsException("execution plans with id " + executionPlan.getId() + " was specified twice");
                 }
-
-                executionPlan.start(siddhiManager, siddhiCallback);
-                newExecutionPlans.put(executionPlan.getId(), executionPlan);
             } catch (ExecutionPlanException e) {
                 throw new RestInvalidException(e.getMessage(), e);
             } catch (SiddhiParserException e) {
@@ -123,7 +148,46 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             }
         }
 
-        executionPlans = newExecutionPlans;
+        // Remove the execution plans that are already present and with an equal or greater version
+        Set<String> presentExecutionPlansIds = new TreeSet<>(executionPlans.keySet());
+        Set<String> newExecutionPlansIds = new TreeSet<>(newExecutionPlans.keySet());
+        newExecutionPlansIds.retainAll(presentExecutionPlansIds);
+
+        for (String id : newExecutionPlansIds) {
+            ExecutionPlan present = executionPlans.get(id);
+            ExecutionPlan newer = executionPlans.get(id);
+
+            if (present.getVersion() >= newer.getVersion()) {
+                newExecutionPlans.remove(id);
+                executionPlanstoKeep.add(id);
+            }
+        }
+
+        // Add the newer elements
+        newExecutionPlansIds = new TreeSet<>(newExecutionPlans.keySet());
+        newExecutionPlansIds.removeAll(presentExecutionPlansIds);
+
+        for (String id : newExecutionPlansIds) {
+            ExecutionPlan newer = newExecutionPlans.get(id);
+
+            try {
+                add(newer);
+                executionPlanstoKeep.add(id);
+            } catch (ExecutionPlanException e) {
+                throw new RestInvalidException(e.getMessage(), e);
+            }
+        }
+
+        // Now remove the ones that are not necessary anymore
+        presentExecutionPlansIds = new TreeSet<>(executionPlans.keySet());
+        presentExecutionPlansIds.removeAll(executionPlanstoKeep);
+
+        for (String id : presentExecutionPlansIds) {
+           remove(id);
+        }
+
+        // Save the new state
+        save();
     }
 
     @Override
@@ -135,5 +199,43 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
 
         return listQueries;
+    }
+
+    public void save() {
+        String stateFilePath = ConfigData.getStateFile();
+        if (stateFilePath == null) return;
+
+        List<Map<String, Object>> executionPlansList = new ArrayList<>();
+
+        for (ExecutionPlan executionPlan : executionPlans.values()) {
+            Map<String, Object> executionPlanMap = executionPlan.toMap();
+            executionPlansList.add(executionPlanMap);
+        }
+
+        try {
+            String listString = objectMapper.writeValueAsString(executionPlansList);
+            PrintWriter writer = new PrintWriter(stateFilePath, "UTF-8");
+            writer.print(listString);
+            writer.close();
+        } catch (IOException e) {
+            log.debug("Couldn't write the state file", e);
+        }
+    }
+
+    public void restore() {
+        String stateFilePath = ConfigData.getStateFile();
+        if (stateFilePath == null) return;
+
+        try {
+            Path path = Paths.get(stateFilePath);
+            byte[] bytes = Files.readAllBytes(path);
+            String contents = new String(bytes, "UTF-8");
+            List<Map<String, Object>> executionPlanList = objectMapper.readValue(contents, List.class);
+            synchronize(executionPlanList);
+        } catch (IOException e) {
+            log.error("Couldn't read the state file", e);
+        } catch (RestException e) {
+            log.error("Couldn't synchronize the state file", e);
+        }
     }
 }

@@ -85,6 +85,12 @@
             <version>3.0.0-alpha</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.wso2.siddhi</groupId>
+            <artifactId>siddhi-extension-timeseries</artifactId>
+            <version>3.0.0-alpha</version>
+        </dependency>
+
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
