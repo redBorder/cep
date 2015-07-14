@@ -5,34 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.redborder</groupId>
-    <artifactId>rb-correlation-engine</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>cep</artifactId>
+    <version>0.1-SNAPSHOT</version>
 
     <scm>
-        <developerConnection>scm:git:git@gitlab.redborder.lan:agomez/rb-correlation-engine.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:redBorder/cep.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>internal</id>
-            <name>redBorder Internal Repository</name>
-            <url>http://archiva.redborder.lan/repository/internal/</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>redBorder Snapshot Repository</name>
-            <url>http://archiva.redborder.lan/repository/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <repositories>
-        <repository>
-            <id>internal</id>
-            <name>redBorder Internal Repository</name>
-            <url>http://archiva.redborder.lan/repository/internal/</url>
-        </repository>
-
         <repository>
             <id>wso2.releases</id>
             <name>WSO2 internal Repository</name>
@@ -82,12 +63,6 @@
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-query-compiler</artifactId>
-            <version>3.0.0-alpha</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-timeseries</artifactId>
             <version>3.0.0-alpha</version>
         </dependency>
 
@@ -160,7 +135,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>net.redborder.correlation.CorrelationService</mainClass>
+                            <mainClass>net.redborder.cep.CorrelationService</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

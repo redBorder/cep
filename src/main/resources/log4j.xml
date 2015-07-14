@@ -18,8 +18,13 @@
         </layout>
     </appender>
 
+    <logger name="net.redborder.cep" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console"/>
+    </logger>
+
     <root>
-        <priority value="info" />
+        <priority value="warn" />
         <appender-ref ref="console"/>
     </root>
 </log4j:configuration>
