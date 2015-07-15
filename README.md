@@ -12,13 +12,13 @@ The rules are exposed with a REST API, so you can add, remove or list rules on t
 
 ## Rules
 
-The unit of works on redBorder CEP are called "rules" which are written on JSON and accessed and modified via the REST API. They are a combination of execution plans from Siddhi and some metadata to help you map your Siddhi streams with Kafka.
+The unit of work on redBorder CEP are called "rules". The rules are written on JSON and accessed and modified via the REST API. They are a combination of execution plans from a library called Siddhi and some more data to help you map your kafka topics to Siddhi streams. You can find more information about Siddhi and execution plans below.
 
-Take a look at the [rules wiki page](https://github.com/redBorder/cep/wiki/Rules) for information about how to write rules and the available options.
+Take a look at the [rules wiki page](https://github.com/redBorder/cep/wiki/Rules) for information about how to write rules.
 
 ## REST API
 
-The REST API lets you add, remove, list and synchornize rules on the fly. You can say it speaks JSON, so it's developer-friendly. Find more information about it at the [REST API wiki page](https://github.com/redBorder/cep/wiki/Rest-API).
+The REST API lets you add, remove, list and synchronize rules on the fly. Find more information about it at the [REST API wiki page](https://github.com/redBorder/cep/wiki/Rest-API).
 
 ## Siddhi
 
