@@ -26,6 +26,14 @@ The engine of rB CEP is called [Siddhi](https://github.com/wso2/siddhi). It's a 
 
 For you to know how to write execution plans, which are the body of our rules, you must know the Siddhi Query Language, a simple SQL-like language that lets you work with data streams. You can find the specification for the language on [WSO2's documentation site](https://docs.wso2.com/display/CEP310/Siddhi+Language+Specification)
 
+You can find more infomation about how rB CEP works with Siddhi on the [siddhi wiki page](https://github.com/redBorder/cep/wiki/Siddhi).
+
+## Config
+
+You will need a config file to specify the topics that will be read from kafka, the attributes that are part of the stream with its type, and a few other options like the zookeeper nodes, the kafka brokers and the REST URI that will be used to serve the REST API.
+
+Find more information about the config file on the [config file wiki page](https://github.com/redBorder/cep/wiki/Config-File)
+
 ## Contributing
 
 1. [Fork it](https://github.com/redborder/cep/fork)
@@ -33,3 +41,7 @@ For you to know how to write execution plans, which are the body of our rules, y
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## License
+
+[AGPL v3](http://www.gnu.org/licenses/agpl-3.0.html)
