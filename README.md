@@ -1,4 +1,4 @@
-# redBorder Complex Event Processor (CEP)
+# redBorder Complex Event Processor
 
 As [Wikipedia](https://en.wikipedia.org/wiki/Complex_event_processing) states, Complex event processing, or CEP, is
 event processing that combines data from multiple sources to infer events or patterns that suggest more complicated
@@ -7,6 +7,8 @@ circumstances.
 redBorder CEP executes a set of rules which, as said, can infer events, patterns and sequences. Also, they can make windowed calculations like averages, sums and counts, and virtually anything you want. The input of these rules are all the events from a set of kafka topics, and the result of these calculations are inserted on a new set of kafka topics.
 
 The rules are exposed with a REST API, so you can add, remove or list rules on the fly.
+
+![schema](https://cloud.githubusercontent.com/assets/474728/8695543/d2bca678-2ae5-11e5-8ced-0f25b767441b.jpg)
 
 ## Rules
 
