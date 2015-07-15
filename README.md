@@ -8,7 +8,7 @@ redBorder CEP executes a set of rules which, as said, can infer events, patterns
 
 The rules are exposed with a REST API, so you can add, remove or list rules on the fly.
 
-![schema](https://cloud.githubusercontent.com/assets/474728/8695543/d2bca678-2ae5-11e5-8ced-0f25b767441b.jpg)
+![schema2](https://cloud.githubusercontent.com/assets/474728/8697787/4542fdf2-2af8-11e5-9148-e989dbfa0429.jpg)
 
 ## Rules
 
