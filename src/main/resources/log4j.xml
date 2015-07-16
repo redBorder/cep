@@ -18,6 +18,11 @@
         </layout>
     </appender>
 
+    <logger name="kafka.common.AppInfo$" additivity="false">
+        <level value="error" />
+        <appender-ref ref="console"/>
+    </logger>
+
     <logger name="net.redborder.cep" additivity="false">
         <level value="info" />
         <appender-ref ref="console"/>

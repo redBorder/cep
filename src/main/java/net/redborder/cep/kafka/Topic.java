@@ -46,6 +46,6 @@ public class Topic {
     }
 
     public String toString() {
-        return this.name;
+        return this.name + "(" + this.partitions + ")";
     }
 }

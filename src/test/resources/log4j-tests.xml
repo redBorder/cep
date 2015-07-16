@@ -13,6 +13,11 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <logger name="kafka.common.AppInfo$" additivity="false">
+        <level value="error" />
+        <appender-ref ref="console"/>
+    </logger>
+
     <root>
         <priority value="warn" />
         <appender-ref ref="console"/>
