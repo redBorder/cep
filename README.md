@@ -1,4 +1,5 @@
 # redBorder Complex Event Processor
+[![Build Status](https://travis-ci.org/redBorder/cep.svg)](https://travis-ci.org/redBorder/cep)
 
 As [Wikipedia](https://en.wikipedia.org/wiki/Complex_event_processing) states, Complex event processing, or CEP, is
 event processing that combines data from multiple sources to infer events or patterns that suggest more complicated
