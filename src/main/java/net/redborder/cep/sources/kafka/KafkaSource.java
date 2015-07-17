@@ -6,7 +6,6 @@ import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import net.redborder.cep.sources.Source;
 import net.redborder.cep.sources.parsers.ParsersManager;
-import net.redborder.cep.util.ConfigData;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -59,12 +58,14 @@ public class KafkaSource extends Source {
 
     @Override
     public void prepare() {
-        curator = CuratorFrameworkFactory.newClient(ConfigData.getZkConnect(), new RetryNTimes(10, 30000));
+        String zkConnect = (String) getProperty("zk_connect");
+
+        curator = CuratorFrameworkFactory.newClient(zkConnect, new RetryNTimes(10, 30000));
         curator.start();
 
         props = new Properties();
         props.put("auto.commit.enable", "true");
-        props.put("zookeeper.connect", ConfigData.getZkConnect());
+        props.put("zookeeper.connect", zkConnect);
         props.put("group.id", "rb-cep-engine");
         props.put("zookeeper.session.timeout.ms", "400");
         props.put("zookeeper.sync.time.ms", "200");
