@@ -1,12 +1,14 @@
 package net.redborder.cep.util;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class ConfigData {
     private static ConfigFile configFile;
 
-    private ConfigData() {}
+    private ConfigData() {
+    }
 
     public static ConfigFile getConfigFile() {
         return configFile;
@@ -40,12 +42,17 @@ public class ConfigData {
         return configFile.getKeys("streams");
     }
 
-    public static Map<String, String> getSources(){
+    public static Map<String, String> getSources() {
         return configFile.get("sources");
     }
 
-    public static Map<String, String> getParsers(){
-        return configFile.get("parsers");
+    public static Map<String, String> getParsers() {
+        Map<String, String> parsers = configFile.get("parsers");
+
+        if (parsers == null)
+            parsers = new HashMap<>();
+
+        return parsers;
     }
 
     @SuppressWarnings("unchecked")
