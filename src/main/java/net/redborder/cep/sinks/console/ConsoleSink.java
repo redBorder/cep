@@ -15,4 +15,7 @@ public class ConsoleSink implements Sink {
     public void process(String streamName, String topic, Map<String, Object> message) {
         log.info("[{}] {}", streamName, message);
     }
+
+    @Override
+    public void shutdown() { }
 }

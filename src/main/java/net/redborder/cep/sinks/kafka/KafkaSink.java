@@ -31,7 +31,7 @@ public class KafkaSink implements Sink {
         props.put("producer.type", "async");
         props.put("queue.buffering.max.messages", "10000");
         props.put("queue.buffering.max.ms", "500");
-        props.put("partitioner.class", "net.redborder.cep.senders.kafka.SimplePartitioner");
+        props.put("partitioner.class", "net.redborder.cep.sinks.kafka.SimplePartitioner");
 
         ProducerConfig config = new ProducerConfig(props);
         producer = new Producer<>(config);
@@ -43,6 +43,11 @@ public class KafkaSink implements Sink {
         send(topic, clientMac, message);
     }
 
+    @Override
+    public void shutdown() {
+        producer.close();
+    }
+
     public void send(String topic, String key, Map<String, Object> message) {
         try {
             String messageStr = objectMapper.writeValueAsString(message);
@@ -51,9 +56,5 @@ public class KafkaSink implements Sink {
         } catch (IOException e) {
             log.error("Error converting map to json: {}", message);
         }
-    }
-
-    public void shutdown() {
-        producer.close();
     }
 }

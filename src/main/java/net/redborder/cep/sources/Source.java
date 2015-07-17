@@ -22,10 +22,12 @@ public abstract class Source {
     public Source(ParsersManager parsersManager, EventHandler eventHandler, Map<String, Object> properties) {
         this.parsersManager = parsersManager;
         this.properties = properties;
+
         // Create the disruptor for this topic and start it
         Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ConfigData.getRingBufferSize(), Executors.newCachedThreadPool());
         disruptor.handleEventsWith(eventHandler);
         disruptor.start();
+
         eventProducer = new EventProducer(disruptor.getRingBuffer());
         prepare();
     }

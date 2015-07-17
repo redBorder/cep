@@ -17,11 +17,11 @@ public class CorrelationService {
         else ConfigData.setConfigFile(DEFAULT_CONFIG_FILE);
 
         // The KafkaSink wraps the kafka producer in order to be used by siddhi handler
-        Sink eventReceiver = new KafkaSink();
+        final Sink eventReceiver = new KafkaSink();
 
         // Siddhi is in charge of processing the events coming from kafka, interpreting
         // the queries that comes from the REST API and correlating the events
-        SiddhiHandler siddhiHandler = new SiddhiHandler(eventReceiver);
+        final SiddhiHandler siddhiHandler = new SiddhiHandler(eventReceiver);
         siddhiHandler.restore();
 
         // ParserManager prepare all parsers and create relations between parsers and sources.
@@ -29,11 +29,22 @@ public class CorrelationService {
 
         // SourcesManager coordinates the sources that consumes events from streams
         // The messages read from streams are sent to siddhi handler
-        SourcesManager sourcesManager = new SourcesManager(parsersManager, siddhiHandler);
+        final SourcesManager sourcesManager = new SourcesManager(parsersManager, siddhiHandler);
 
         // RestManager starts the REST API and redirects the queries
         // that users add with it to SiddhiHandler.
         String restUri = ConfigData.getRESTURI();
         RestManager.startServer(restUri, siddhiHandler);
+
+        // Add a hook to execute when the user wants to exit
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                siddhiHandler.stop();
+                sourcesManager.shutdown();
+                eventReceiver.shutdown();
+                RestManager.stopServer();
+            }
+        });
     }
 }

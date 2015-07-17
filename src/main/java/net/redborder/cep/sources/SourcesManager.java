@@ -16,7 +16,6 @@ public class SourcesManager {
     private Map<String, Source> sources = new HashMap<>();
 
     public SourcesManager(ParsersManager parsersManager, EventHandler eventHandler) {
-
         for (Map<String, Object> sourceEntry : ConfigData.getSources()) {
             String sourceName = (String) sourceEntry.get("name");
             String sourceNameClass = (String) sourceEntry.get("class");
@@ -51,8 +50,8 @@ public class SourcesManager {
     }
 
     public void shutdown() {
-        for (Source receiver : sources.values()) {
-            receiver.shutdown();
+        for (Source source : sources.values()) {
+            source.shutdown();
         }
     }
 }
