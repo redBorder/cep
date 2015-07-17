@@ -1,5 +1,5 @@
 rest_uri: http://10.0.150.131:8888
-state_file: /root/testState.json
+state_file: /tmp/testState.json
 sources:
   kafka: net.redborder.cep.sources.kafka.KafkaSource
 parsers:

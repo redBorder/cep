@@ -23,7 +23,7 @@ public class RestManager {
     public static void startServer(String wsUri, RestListener rl) {
         // create a resource config that scans for JAX-RS resources and providers
         ResourceConfig rc = new ResourceConfig()
-                .register(Resource.class)
+                .register(RestRules.class)
                 .register(JacksonFeature.class);
 
         // Set the listener for the petitions
@@ -34,8 +34,6 @@ public class RestManager {
         server = GrizzlyHttpServerFactory.createHttpServer(URI.create(wsUri), rc);
 
         // start the server
-        log.info("Starting server...");
-
         try {
             server.start();
         } catch (IOException e) {

@@ -46,7 +46,6 @@ public class KafkaSource extends Source {
                 log.warn("Couldn't discover partitions for topic " + streamName, e);
             }
 
-            log.info("Got {} partitions from topic {}", currentPartitions, streamName);
             Topic topic = new Topic(streamName, currentPartitions, parsersManager.getParserByStream(streamName), this);
             topics.add(topic);
 

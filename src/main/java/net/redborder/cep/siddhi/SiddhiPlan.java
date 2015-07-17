@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.ExecutionPlanRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
+import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
@@ -207,7 +208,7 @@ public class SiddhiPlan {
 
     public void send(String topicName, Map<String, Object> data) {
         if (!inputTopics.contains(topicName)) {
-            log.warn("Received send from invalid topic {} to execution plan {}", topicName, id);
+            log.warn("Received send from invalid topic {} to execution plan {} version {}", topicName, id, version);
             return;
         }
 
@@ -221,27 +222,33 @@ public class SiddhiPlan {
         try {
             executionPlanRuntime.getInputHandler("raw_" + topicName).send(elementsList.toArray());
         } catch (InterruptedException e) {
-            log.error("Couldn't send items to execution plan {}", id);
+            log.error("Couldn't send items to execution plan {} version {}", id, version);
         }
     }
 
-    public void start(SiddhiManager siddhiManager, SiddhiCallback siddhiCallback) {
+    public void start(SiddhiManager siddhiManager, SiddhiCallback siddhiCallback) throws ExecutionPlanException {
         this.executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(getFullExecutionPlan());
 
         for (Map.Entry<String, String> entry : outputTopics.entrySet()) {
             String streamName = entry.getKey();
             String topic = entry.getValue();
-            List<Attribute> attributes = executionPlanRuntime.getStreamDefinitionMap().get(streamName).getAttributeList();
-            StreamCallback streamCallback = siddhiCallback.getCallback(getId(), streamName, topic, attributes);
-            executionPlanRuntime.addCallback(streamName, streamCallback);
+
+            AbstractDefinition abstractDefinition = executionPlanRuntime.getStreamDefinitionMap().get(streamName);
+            if (abstractDefinition != null) {
+                List<Attribute> attributes = abstractDefinition.getAttributeList();
+                StreamCallback streamCallback = siddhiCallback.getCallback(getId(), streamName, topic, attributes);
+                executionPlanRuntime.addCallback(streamName, streamCallback);
+            } else {
+                throw new InvalidExecutionPlanException("You specified a output that is not present on the execution plan");
+            }
         }
 
         executionPlanRuntime.start();
-        log.info("Started execution plan with id {} and plan {}", id, getExecutionPlan());
+        log.info("Started execution plan with id {} version {}", id, version, fullExecutionPlan);
     }
 
     public void stop() {
         this.executionPlanRuntime.shutdown();
-        log.info("Stopped execution plan {}", id);
+        log.info("Stopped execution plan {} version {}", id, version);
     }
 }

@@ -82,25 +82,26 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
     public synchronized void add(SiddhiPlan siddhiPlan) throws ExecutionPlanException {
         SiddhiPlan present = executionPlans.get(siddhiPlan.getId());
+        boolean mustBeRemoved = false;
 
         if (present != null) {
             if (present.getVersion() >= siddhiPlan.getVersion()) {
                 throw new AlreadyExistsException("execution plan with id " + siddhiPlan.getId() + " already exists with an equal or greater version");
             } else {
-                try {
-                    remove(siddhiPlan.getId());
-                } catch (RestException e) {
-                    log.error("Weird! Execution plan id {} does not exists but it should!", siddhiPlan.getId(), e);
-                }
+                mustBeRemoved = true;
             }
         }
 
         try {
+            log.info("Adding new execution plan: {}", siddhiPlan.toMap());
+
             siddhiPlan.start(siddhiManager, siddhiCallback);
             executionPlans.put(siddhiPlan.getId(), siddhiPlan);
             save();
 
-            log.info("New execution plan added: {}", siddhiPlan.toMap());
+            if (mustBeRemoved) {
+                present.stop();
+            }
         } catch (SiddhiParserException e) {
             throw new InvalidExecutionPlanException("invalid siddhi execution plan", e);
         }
@@ -214,7 +215,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             writer.print(listString);
             writer.close();
         } catch (IOException e) {
-            log.debug("Couldn't write the state file", e);
+            log.error("Couldn't write the state file");
         }
     }
 
@@ -230,7 +231,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             List<Map<String, Object>> executionPlanList = objectMapper.readValue(contents, List.class);
             synchronize(executionPlanList);
         } catch (IOException e) {
-            log.error("Couldn't read the state file", e);
+            log.warn("Couldn't read the state file");
         } catch (RestException e) {
             log.error("Couldn't synchronize the state file", e);
         }
