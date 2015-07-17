@@ -1,6 +1,6 @@
 package net.redborder.cep.siddhi;
 
-import net.redborder.cep.receivers.EventReceiver;
+import net.redborder.cep.senders.EventSender;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class SiddhiCallback {
-    final EventReceiver eventReceiver;
+    final EventSender eventReceiver;
 
-    public SiddhiCallback(EventReceiver eventReceiver) {
+    public SiddhiCallback(EventSender eventReceiver) {
         this.eventReceiver = eventReceiver;
     }
 

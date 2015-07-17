@@ -1,7 +1,7 @@
-package net.redborder.cep.kafka;
+package net.redborder.cep.receivers.kafka;
 
-import net.redborder.cep.kafka.disruptor.EventProducer;
-import net.redborder.cep.kafka.parsers.Parser;
+import net.redborder.cep.receivers.disruptor.EventProducer;
+import net.redborder.cep.receivers.parsers.Parser;
 
 import java.util.HashMap;
 import java.util.Map;

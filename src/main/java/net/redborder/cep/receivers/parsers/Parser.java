@@ -1,4 +1,4 @@
-package net.redborder.cep.kafka.parsers;
+package net.redborder.cep.receivers.parsers;
 
 import java.util.Map;
 

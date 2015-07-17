@@ -1,4 +1,4 @@
-package net.redborder.cep.kafka.disruptor;
+package net.redborder.cep.receivers.disruptor;
 
 import com.lmax.disruptor.EventFactory;
 

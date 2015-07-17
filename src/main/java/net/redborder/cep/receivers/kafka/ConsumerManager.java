@@ -1,14 +1,14 @@
-package net.redborder.cep.kafka;
+package net.redborder.cep.receivers.kafka;
 
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.dsl.Disruptor;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import net.redborder.cep.kafka.disruptor.EventProducer;
-import net.redborder.cep.kafka.disruptor.MapEvent;
-import net.redborder.cep.kafka.disruptor.MapEventFactory;
-import net.redborder.cep.kafka.parsers.Parser;
+import net.redborder.cep.receivers.disruptor.EventProducer;
+import net.redborder.cep.receivers.disruptor.MapEvent;
+import net.redborder.cep.receivers.disruptor.MapEventFactory;
+import net.redborder.cep.receivers.parsers.Parser;
 import net.redborder.cep.util.ConfigData;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;

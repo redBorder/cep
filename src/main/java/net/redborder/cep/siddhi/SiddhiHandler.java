@@ -1,9 +1,9 @@
 package net.redborder.cep.siddhi;
 
 import com.lmax.disruptor.EventHandler;
-import net.redborder.cep.kafka.disruptor.MapEvent;
-import net.redborder.cep.receivers.ConsoleReceiver;
-import net.redborder.cep.receivers.EventReceiver;
+import net.redborder.cep.receivers.disruptor.MapEvent;
+import net.redborder.cep.senders.ConsoleSender;
+import net.redborder.cep.senders.EventSender;
 import net.redborder.cep.rest.RestListener;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
@@ -33,7 +33,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private ObjectMapper objectMapper;
     private Map<String, SiddhiPlan> executionPlans;
 
-    public SiddhiHandler(EventReceiver eventReceiver) {
+    public SiddhiHandler(EventSender eventReceiver) {
         this.siddhiManager = new SiddhiManager();
         this.siddhiCallback = new SiddhiCallback(eventReceiver);
         this.objectMapper = new ObjectMapper();
@@ -41,7 +41,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     public SiddhiHandler() {
-        this(new ConsoleReceiver());
+        this(new ConsoleSender());
     }
 
     public void stop() {

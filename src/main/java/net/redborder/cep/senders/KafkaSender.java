@@ -1,13 +1,13 @@
-package net.redborder.cep.receivers;
+package net.redborder.cep.senders;
 
-import net.redborder.cep.kafka.ProducerManager;
+import net.redborder.cep.receivers.kafka.ProducerManager;
 
 import java.util.Map;
 
-public class KafkaReceiver implements EventReceiver {
+public class KafkaSender implements EventSender {
     private ProducerManager producerManager;
 
-    public KafkaReceiver(ProducerManager producerManager) {
+    public KafkaSender(ProducerManager producerManager) {
         this.producerManager = producerManager;
     }
 

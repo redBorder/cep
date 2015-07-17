@@ -1,7 +1,7 @@
-package net.redborder.cep.receivers;
+package net.redborder.cep.senders;
 
 import java.util.Map;
 
-public interface EventReceiver {
+public interface EventSender {
     void process(String executionPlanId, String streamName, String topic, Map<String, Object> message);
 }
