@@ -34,8 +34,6 @@ public class RestManager {
         server = GrizzlyHttpServerFactory.createHttpServer(URI.create(wsUri), rc);
 
         // start the server
-        log.info("Starting server...");
-
         try {
             server.start();
         } catch (IOException e) {
