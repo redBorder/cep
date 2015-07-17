@@ -29,8 +29,8 @@ public class KafkaSource extends Source {
     private Properties props;
     private CuratorFramework curator;
 
-    public KafkaSource(ParsersManager parsersManager, EventHandler eventHandler) {
-        super(parsersManager, eventHandler);
+    public KafkaSource(ParsersManager parsersManager, EventHandler eventHandler, Map<String, Object> properties) {
+        super(parsersManager, eventHandler, properties);
     }
 
     @Override
