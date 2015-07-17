@@ -1,4 +1,4 @@
-package net.redborder.cep.kafka.disruptor;
+package net.redborder.cep.sources.disruptor;
 
 import java.util.Map;
 

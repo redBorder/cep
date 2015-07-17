@@ -1,16 +1,22 @@
 rest_uri: http://10.0.150.131:8888
 state_file: /tmp/testState.json
-topics:
+sources:
+  kafka: net.redborder.cep.sources.kafka.KafkaSource
+parsers:
+  json: net.redborder.cep.sources.parsers.JsonParser
+streams:
   test:
-    parser: net.redborder.cep.kafka.parsers.JsonParser
-    attributes:
-      a: string
-      b: string
-      c: string
-      d: int
-      e: int
+     source: kafka
+     parser: json
+     attributes:
+       a: string
+       b: string
+       c: string
+       d: int
+       e: int
   test2:
-    parser: net.redborder.cep.kafka.parsers.JsonParser
+    source: kafka
+    parser: json
     attributes:
       a: string
       b: string

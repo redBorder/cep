@@ -1,4 +1,4 @@
-package net.redborder.cep.kafka.parsers;
+package net.redborder.cep.sources.parsers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

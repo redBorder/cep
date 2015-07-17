@@ -1,16 +1,16 @@
 package net.redborder.cep.siddhi;
 
 import com.lmax.disruptor.EventHandler;
-import net.redborder.cep.kafka.disruptor.MapEvent;
-import net.redborder.cep.receivers.ConsoleReceiver;
-import net.redborder.cep.receivers.EventReceiver;
 import net.redborder.cep.rest.RestListener;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
+import net.redborder.cep.sinks.console.ConsoleSink;
+import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.siddhi.exceptions.AlreadyExistsException;
 import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.InvalidExecutionPlanException;
+import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.util.ConfigData;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private ObjectMapper objectMapper;
     private Map<String, SiddhiPlan> executionPlans;
 
-    public SiddhiHandler(EventReceiver eventReceiver) {
+    public SiddhiHandler(Sink eventReceiver) {
         this.siddhiManager = new SiddhiManager();
         this.siddhiCallback = new SiddhiCallback(eventReceiver);
         this.objectMapper = new ObjectMapper();
@@ -41,7 +41,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     public SiddhiHandler() {
-        this(new ConsoleReceiver());
+        this(new ConsoleSink());
     }
 
     public void stop() {
