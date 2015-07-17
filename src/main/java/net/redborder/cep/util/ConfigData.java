@@ -8,8 +8,7 @@ import java.util.Set;
 public class ConfigData {
     private static ConfigFile configFile;
 
-    private ConfigData() {
-    }
+    private ConfigData() { }
 
     public static ConfigFile getConfigFile() {
         return configFile;
@@ -17,10 +16,6 @@ public class ConfigData {
 
     public static void setConfigFile(String fileName) {
         configFile = new ConfigFile(fileName);
-    }
-
-    public static String getZkConnect() {
-        return configFile.getOrDefault("zk_connect", "127.0.0.1:2181");
     }
 
     public static String getKafkaBrokers() {
@@ -69,7 +64,6 @@ public class ConfigData {
         Map<String, Object> streamData = (Map<String, Object>) streams.get(streamName);
         return (String) streamData.get("parser");
     }
-
 
     @SuppressWarnings("unchecked")
     public static Map<String, String> getAttributes(String topicName) {
