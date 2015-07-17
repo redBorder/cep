@@ -3,7 +3,6 @@ package net.redborder.cep.sources.kafka;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import net.redborder.cep.sources.Source;
-import net.redborder.cep.sources.disruptor.EventProducer;
 import net.redborder.cep.sources.parsers.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

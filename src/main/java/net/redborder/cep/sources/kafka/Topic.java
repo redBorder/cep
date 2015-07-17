@@ -1,7 +1,6 @@
 package net.redborder.cep.sources.kafka;
 
 import net.redborder.cep.sources.Source;
-import net.redborder.cep.sources.disruptor.EventProducer;
 import net.redborder.cep.sources.parsers.Parser;
 
 import java.util.HashMap;

@@ -1,12 +1,11 @@
 package net.redborder.cep;
 
-import net.redborder.cep.sources.SourcesManager;
-import net.redborder.cep.sources.kafka.KafkaSource;
-import net.redborder.cep.sources.kafka.ProducerManager;
+import net.redborder.cep.rest.RestManager;
 import net.redborder.cep.senders.EventSender;
 import net.redborder.cep.senders.KafkaSender;
-import net.redborder.cep.rest.RestManager;
 import net.redborder.cep.siddhi.SiddhiHandler;
+import net.redborder.cep.sources.SourcesManager;
+import net.redborder.cep.sources.kafka.ProducerManager;
 import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
 
