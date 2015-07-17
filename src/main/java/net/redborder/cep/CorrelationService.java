@@ -9,7 +9,13 @@ import net.redborder.cep.siddhi.SiddhiHandler;
 import net.redborder.cep.util.ConfigData;
 
 public class CorrelationService {
+    public static final String DEFAULT_CONFIG_FILE = "./conf/config.yml";
+
     public static void main(String[] args) {
+        // First, initialize the config file
+        if (args.length >= 1) ConfigData.setConfigFile(args[0]);
+        else ConfigData.setConfigFile(DEFAULT_CONFIG_FILE);
+
         // ProducerManager is in charge of emitting messages from this application to kafka
         // The KafkaReceiver wraps the producer manager in order to be used by siddhi handler
         ProducerManager producerManager = new ProducerManager();

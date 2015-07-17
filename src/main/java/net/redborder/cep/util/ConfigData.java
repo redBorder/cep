@@ -4,8 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConfigData {
-    private static String CONFIG_FILE_PATH = "config.yml";
-    private static ConfigFile configFile = new ConfigFile(CONFIG_FILE_PATH);
+    private static ConfigFile configFile;
 
     private ConfigData() {}
 
