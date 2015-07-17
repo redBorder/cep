@@ -1,6 +1,7 @@
 package net.redborder.cep.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,8 +43,15 @@ public class ConfigData {
         return configFile.getKeys("streams");
     }
 
-    public static Map<String, String> getSources() {
+    public static List<Map<String, Object>> getSources() {
         return configFile.get("sources");
+    }
+
+    @SuppressWarnings("unchecked")
+    public static String getSource(String streamName) {
+        Map<String, Object> topics = configFile.get("streams");
+        Map<String, Object> streamData = (Map<String, Object>) topics.get(streamName);
+        return (String) streamData.get("source");
     }
 
     public static Map<String, String> getParsers() {
@@ -62,12 +70,6 @@ public class ConfigData {
         return (String) streamData.get("parser");
     }
 
-    @SuppressWarnings("unchecked")
-    public static String getSource(String streamName) {
-        Map<String, Object> topics = configFile.get("streams");
-        Map<String, Object> streamData = (Map<String, Object>) topics.get(streamName);
-        return (String) streamData.get("source");
-    }
 
     @SuppressWarnings("unchecked")
     public static Map<String, String> getAttributes(String topicName) {

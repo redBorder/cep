@@ -17,17 +17,21 @@ public class SourcesManager {
 
     public SourcesManager(ParsersManager parsersManager, EventHandler eventHandler) {
 
-        for (Map.Entry<String, String> sourceEntry : ConfigData.getSources().entrySet()) {
+        for (Map<String, Object> sourceEntry : ConfigData.getSources()) {
+            String sourceName = (String) sourceEntry.get("name");
+            String sourceNameClass = (String) sourceEntry.get("class");
+            Map<String, Object> properties = (Map<String, Object>) sourceEntry.get("properties");
+
             try {
                 // Get parser from config
-                Class sourceClass = Class.forName(sourceEntry.getValue());
-                Constructor<Source> constructor = sourceClass.getConstructor(ParsersManager.class, EventHandler.class);
-                Source source = constructor.newInstance(new Object[]{parsersManager, eventHandler});
-                sources.put(sourceEntry.getKey(), source);
+                Class sourceClass = Class.forName(sourceNameClass);
+                Constructor<Source> constructor = sourceClass.getConstructor(ParsersManager.class, EventHandler.class, Map.class);
+                Source source = constructor.newInstance(new Object[]{parsersManager, eventHandler, properties});
+                sources.put(sourceName, source);
             } catch (ClassNotFoundException e) {
-                log.error("Couldn't find the class associated with the source " + sourceEntry.getValue());
+                log.error("Couldn't find the class associated with the source " + sourceNameClass);
             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                log.error("Couldn't create the instance associated with the source " + sourceEntry.getValue(), e);
+                log.error("Couldn't create the instance associated with the source " + sourceNameClass, e);
             }
         }
 

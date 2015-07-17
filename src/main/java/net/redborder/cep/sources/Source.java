@@ -17,9 +17,11 @@ public abstract class Source {
     private static final Logger log = LoggerFactory.getLogger(Source.class);
     public EventProducer eventProducer;
     public ParsersManager parsersManager;
+    public Map<String, Object> properties;
 
-    public Source(ParsersManager parsersManager, EventHandler eventHandler) {
+    public Source(ParsersManager parsersManager, EventHandler eventHandler, Map<String, Object> properties) {
         this.parsersManager = parsersManager;
+        this.properties = properties;
         // Create the disruptor for this topic and start it
         Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ConfigData.getRingBufferSize(), Executors.newCachedThreadPool());
         disruptor.handleEventsWith(eventHandler);
@@ -43,5 +45,9 @@ public abstract class Source {
 
     public void send(String streamName, Map<String, Object> data) {
         eventProducer.putData(streamName, data);
+    }
+
+    public Object getProperty(String propertyName){
+        return properties.get(propertyName);
     }
 }
