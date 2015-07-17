@@ -2,15 +2,15 @@ rest_uri: http://10.0.150.131:8888
 state_file: /root/testState.json
 topics:
   test:
-     parser: net.redborder.ceparsers.JsonParser
-     attributes:
-       a: string
-       b: string
-       c: string
-       d: int
-       e: int
+    parser: net.redborder.cep.kafka.parsers.JsonParser
+    attributes:
+      a: string
+      b: string
+      c: string
+      d: int
+      e: int
   test2:
-    parser: net.redborder.ceparsers.JsonParser
+    parser: net.redborder.cep.kafka.parsers.JsonParser
     attributes:
       a: string
       b: string
