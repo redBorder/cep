@@ -1,7 +1,7 @@
 package net.redborder.cep.siddhi;
 
 import junit.framework.TestCase;
-import net.redborder.cep.receivers.disruptor.MapEvent;
+import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
 import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;

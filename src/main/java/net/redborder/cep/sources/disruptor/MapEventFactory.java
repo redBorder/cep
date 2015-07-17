@@ -1,4 +1,4 @@
-package net.redborder.cep.receivers.disruptor;
+package net.redborder.cep.sources.disruptor;
 
 import com.lmax.disruptor.EventFactory;
 

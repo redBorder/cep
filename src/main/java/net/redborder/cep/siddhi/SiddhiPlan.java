@@ -21,7 +21,7 @@ public class SiddhiPlan {
 
     // Get the list of available streams from the config file
     static {
-        Set<String> topics = ConfigData.getTopics();
+        Set<String> topics = ConfigData.getStreams();
         for (String topic : topics) {
             StreamDefinition stream = new StreamDefinition();
             stream.setId(topic);

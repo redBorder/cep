@@ -1,11 +1,13 @@
 package net.redborder.cep;
 
-import net.redborder.cep.receivers.kafka.ConsumerManager;
-import net.redborder.cep.receivers.kafka.ProducerManager;
+import net.redborder.cep.sources.SourcesManager;
+import net.redborder.cep.sources.kafka.KafkaSource;
+import net.redborder.cep.sources.kafka.ProducerManager;
 import net.redborder.cep.senders.EventSender;
 import net.redborder.cep.senders.KafkaSender;
 import net.redborder.cep.rest.RestManager;
 import net.redborder.cep.siddhi.SiddhiHandler;
+import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
 
 public class CorrelationService {
@@ -20,9 +22,13 @@ public class CorrelationService {
         SiddhiHandler siddhiHandler = new SiddhiHandler(eventReceiver);
         siddhiHandler.restore();
 
-        // ConsumerManager coordinates the threads that consumes events from kafka
-        // The messages read from kafka are sent to siddhi handler
-        ConsumerManager consumerManager = new ConsumerManager(siddhiHandler);
+        // ParserManager prepare all parsers and create relations between parsers and sources.
+        ParsersManager parsersManager = new ParsersManager();
+
+        // SourcesManager coordinates the sources that consumes events from streams
+        // The messages read from streams are sent to siddhi handler
+        SourcesManager sourcesManager = new SourcesManager(parsersManager, siddhiHandler);
+
 
         // RestManager starts the REST API and redirects the queries
         // that users add with it to SiddhiHandler.

@@ -1,4 +1,4 @@
-package net.redborder.cep.receivers.kafka;
+package net.redborder.cep.sources.kafka;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
@@ -30,7 +30,7 @@ public class ProducerManager {
         props.put("producer.type", "async");
         props.put("queue.buffering.max.messages", "10000");
         props.put("queue.buffering.max.ms", "500");
-        props.put("partitioner.class", "net.redborder.cep.receivers.kafka.SimplePartitioner");
+        props.put("partitioner.class", "net.redborder.cep.sources.kafka.SimplePartitioner");
 
         ProducerConfig config = new ProducerConfig(props);
         producer = new Producer<>(config);

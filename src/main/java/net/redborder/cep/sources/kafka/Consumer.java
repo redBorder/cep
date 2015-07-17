@@ -1,9 +1,10 @@
-package net.redborder.cep.receivers.kafka;
+package net.redborder.cep.sources.kafka;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
-import net.redborder.cep.receivers.disruptor.EventProducer;
-import net.redborder.cep.receivers.parsers.Parser;
+import net.redborder.cep.sources.Source;
+import net.redborder.cep.sources.disruptor.EventProducer;
+import net.redborder.cep.sources.parsers.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +17,13 @@ public class Consumer implements Runnable {
     private KafkaStream stream;
     private Topic topic;
     private Parser parser;
-    private EventProducer eventProducer;
+    private Source source;
 
     public Consumer(KafkaStream stream, Topic topic) {
         this.stream = stream;
         this.topic = topic;
         this.parser = topic.getParser();
-        this.eventProducer = topic.getEventProducer();
+        this.source = topic.getSource();
     }
 
     @Override
@@ -40,7 +41,7 @@ public class Consumer implements Runnable {
             }
 
             if (event != null) {
-                eventProducer.putData(topic.getName(), event);
+                source.send(topic.getName(), event);
             }
         }
 

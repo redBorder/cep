@@ -1,14 +1,11 @@
-package net.redborder.cep.receivers.kafka;
+package net.redborder.cep.sources.kafka;
 
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.dsl.Disruptor;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import net.redborder.cep.receivers.disruptor.EventProducer;
-import net.redborder.cep.receivers.disruptor.MapEvent;
-import net.redborder.cep.receivers.disruptor.MapEventFactory;
-import net.redborder.cep.receivers.parsers.Parser;
+import net.redborder.cep.sources.Source;
+import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -19,73 +16,54 @@ import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ConsumerManager {
-    private static final Logger log = LoggerFactory.getLogger(ConsumerManager.class);
-
-    private final List<Topic> topics;
-    private final List<Topic> unmodifiableTopics;
+public class KafkaSource extends Source {
+    private static final Logger log = LoggerFactory.getLogger(KafkaSource.class);
     private ConsumerConnector consumer;
     private Map<String, ExecutorService> executors = new LinkedHashMap<>();
-    private CuratorFramework curator = CuratorFrameworkFactory.newClient(ConfigData.getZkConnect(), new RetryNTimes(10, 30000));
+    private List<Topic> topics = new ArrayList<>();
+    private Properties props;
+    private CuratorFramework curator;
 
-    public ConsumerManager(EventHandler eventHandler) {
-        Integer ringBufferSize = ConfigData.getRingBufferSize();
-        topics = new ArrayList<>();
-        unmodifiableTopics = Collections.unmodifiableList(topics);
-        curator.start();
+    public KafkaSource(ParsersManager parsersManager, EventHandler eventHandler) {
+        super(parsersManager, eventHandler);
+    }
 
-        for (String topicName : ConfigData.getTopics()) {
-            String parserName = ConfigData.getParser(topicName);
+    @Override
+    public void addStreams(String... streamNames) {
+        for (String streamName : streamNames) {
+            // Create topic entry
+            Integer currentPartitions = 4;
 
             try {
-                // Get parser from config
-                Class parserClass = Class.forName(parserName);
-                Constructor<Parser> constructor = parserClass.getConstructor();
-                Parser parser = constructor.newInstance();
+                List<String> partitions = curator.getChildren().forPath("/brokers/topics/" + streamName + "/partitions");
+                currentPartitions = partitions.size() != 0 ? partitions.size() : 1;
+            } catch (Exception e) {
+                log.warn("Couldn't discover partitions for topic " + streamName, e);
+            }
 
-                // Create the disruptor for this topic and start it
-                Disruptor<MapEvent> disruptor = new Disruptor<>(new MapEventFactory(), ringBufferSize, Executors.newCachedThreadPool());
-                disruptor.handleEventsWith(eventHandler);
-                disruptor.start();
+            log.info("Got {} partitions from topic {}", currentPartitions, streamName);
+            Topic topic = new Topic(streamName, currentPartitions, parsersManager.getParserByStream(streamName), this);
+            topics.add(topic);
 
-                // Create topic entry
-                Integer currentPartitions = 4;
-
-                try {
-                    List<String> partitions = curator.getChildren().forPath("/brokers/topics/" + topicName + "/partitions");
-                    currentPartitions = partitions.size() != 0 ? partitions.size() : 1;
-                } catch (Exception e) {
-                    log.warn("Couldn't discover partitions for topic " + topicName, e);
-                }
-
-                log.info("Got {} partitions from topic {}", currentPartitions, topicName);
-                Topic topic = new Topic(topicName, currentPartitions, parser, new EventProducer(disruptor.getRingBuffer()));
-                topics.add(topic);
-
-                initConsumers();
-
-                try {
-                    curator.getChildren().usingWatcher(new PartitionsWatcher(topic)).forPath("/brokers/topics/" + topicName + "/partitions");
-                } catch (Exception e) {
-                    log.warn("Couldn't discover partitions for topic " + topicName, e);
-                }
-            } catch (ClassNotFoundException e) {
-                log.error("Couldn't find the class associated with the parser " + parserName);
-            } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                log.error("Couldn't create the instance associated with the parser " + parserName, e);
+            try {
+                curator.getChildren().usingWatcher(new PartitionsWatcher(topic)).forPath("/brokers/topics/" + streamName + "/partitions");
+            } catch (Exception e) {
+                log.warn("Couldn't discover partitions for topic " + streamName, e);
             }
         }
     }
 
-    public void initConsumers() {
-        Properties props = new Properties();
+    @Override
+    public void prepare() {
+        curator = CuratorFrameworkFactory.newClient(ConfigData.getZkConnect(), new RetryNTimes(10, 30000));
+        curator.start();
+
+        props = new Properties();
         props.put("auto.commit.enable", "true");
         props.put("zookeeper.connect", ConfigData.getZkConnect());
         props.put("group.id", "rb-cep-engine");
@@ -93,7 +71,14 @@ public class ConsumerManager {
         props.put("zookeeper.sync.time.ms", "200");
         props.put("auto.commit.interval.ms", "60000");
         props.put("auto.offset.reset", "largest");
+    }
 
+    @Override
+    public void start() {
+        initConsumers();
+    }
+
+    private void initConsumers() {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
         executors.clear();
 
@@ -118,14 +103,11 @@ public class ConsumerManager {
         }
     }
 
-    public List<Topic> getTopics() {
-        return unmodifiableTopics;
-    }
-
     public void shutdown() {
         if (consumer != null) consumer.shutdown();
-        for (ExecutorService executor : executors.values())
+        for (ExecutorService executor : executors.values()) {
             if (executor != null) executor.shutdown();
+        }
         curator.close();
     }
 

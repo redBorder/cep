@@ -1,6 +1,6 @@
 package net.redborder.cep.senders;
 
-import net.redborder.cep.receivers.kafka.ProducerManager;
+import net.redborder.cep.sources.kafka.ProducerManager;
 
 import java.util.Map;
 

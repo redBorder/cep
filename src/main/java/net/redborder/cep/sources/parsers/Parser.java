@@ -1,4 +1,4 @@
-package net.redborder.cep.receivers.parsers;
+package net.redborder.cep.sources.parsers;
 
 import java.util.Map;
 

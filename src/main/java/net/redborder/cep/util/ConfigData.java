@@ -37,21 +37,36 @@ public class ConfigData {
         return configFile.getOrDefault("ring_buffer_size", 1024);
     }
 
-    public static Set<String> getTopics() {
-        return configFile.getKeys("topics");
+    public static Set<String> getStreams() {
+        return configFile.getKeys("streams");
+    }
+
+    public static Map<String, String> getSources(){
+        return configFile.get("sources");
+    }
+
+    public static Map<String, String> getParsers(){
+        return configFile.get("parsers");
     }
 
     @SuppressWarnings("unchecked")
-    public static String getParser(String topicName) {
-        Map<String, Object> topics = configFile.get("topics");
-        Map<String, Object> topicData = (Map<String, Object>) topics.get(topicName);
-        return (String) topicData.get("parser");
+    public static String getParser(String streamName) {
+        Map<String, Object> streams = configFile.get("streams");
+        Map<String, Object> streamData = (Map<String, Object>) streams.get(streamName);
+        return (String) streamData.get("parser");
+    }
+
+    @SuppressWarnings("unchecked")
+    public static String getSource(String streamName) {
+        Map<String, Object> topics = configFile.get("streams");
+        Map<String, Object> streamData = (Map<String, Object>) topics.get(streamName);
+        return (String) streamData.get("source");
     }
 
     @SuppressWarnings("unchecked")
     public static Map<String, String> getAttributes(String topicName) {
-        Map<String, Object> topics = configFile.get("topics");
-        Map<String, Object> topicData = (Map<String, Object>) topics.get(topicName);
-        return (Map<String, String>) topicData.get("attributes");
+        Map<String, Object> topics = configFile.get("streams");
+        Map<String, Object> streamData = (Map<String, Object>) topics.get(topicName);
+        return (Map<String, String>) streamData.get("attributes");
     }
 }

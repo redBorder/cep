@@ -1,7 +1,7 @@
 package net.redborder.cep.siddhi;
 
 import com.lmax.disruptor.EventHandler;
-import net.redborder.cep.receivers.disruptor.MapEvent;
+import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.senders.ConsoleSender;
 import net.redborder.cep.senders.EventSender;
 import net.redborder.cep.rest.RestListener;
