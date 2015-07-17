@@ -5,7 +5,6 @@ import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.sinks.kafka.KafkaSink;
 import net.redborder.cep.siddhi.SiddhiHandler;
 import net.redborder.cep.sources.SourcesManager;
-import net.redborder.cep.sinks.kafka.ProducerManager;
 import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
 
@@ -31,7 +30,6 @@ public class CorrelationService {
         // SourcesManager coordinates the sources that consumes events from streams
         // The messages read from streams are sent to siddhi handler
         SourcesManager sourcesManager = new SourcesManager(parsersManager, siddhiHandler);
-
 
         // RestManager starts the REST API and redirects the queries
         // that users add with it to SiddhiHandler.

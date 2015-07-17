@@ -16,7 +16,7 @@ public class SiddhiCallback {
         this.eventReceiver = eventReceiver;
     }
 
-    public StreamCallback getCallback(final String executionPlanId, final String streamName, final String topic, final List<Attribute> attributes) {
+    public StreamCallback getCallback(final String streamName, final String topic, final List<Attribute> attributes) {
         return new StreamCallback() {
             @Override
             public void receive(Event[] events) {
@@ -29,7 +29,7 @@ public class SiddhiCallback {
                         result.put(columnName, object);
                     }
 
-                    eventReceiver.process(executionPlanId, streamName, topic, result);
+                    eventReceiver.process(streamName, topic, result);
                 }
             }
         };

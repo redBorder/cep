@@ -236,7 +236,7 @@ public class SiddhiPlan {
             AbstractDefinition abstractDefinition = executionPlanRuntime.getStreamDefinitionMap().get(streamName);
             if (abstractDefinition != null) {
                 List<Attribute> attributes = abstractDefinition.getAttributeList();
-                StreamCallback streamCallback = siddhiCallback.getCallback(getId(), streamName, topic, attributes);
+                StreamCallback streamCallback = siddhiCallback.getCallback(streamName, topic, attributes);
                 executionPlanRuntime.addCallback(streamName, streamCallback);
             } else {
                 throw new InvalidExecutionPlanException("You specified a output that is not present on the execution plan");
