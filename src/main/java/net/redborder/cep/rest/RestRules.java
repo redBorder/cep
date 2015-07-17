@@ -43,7 +43,7 @@ public class RestRules {
             listener.add(parseMap(json));
             response = Response.ok().build();
         } catch (RestInvalidException e) {
-            e.printStackTrace();
+            log.info("Add request was invalid: {}", e.getMessage());
             response = Response.status(Response.Status.BAD_REQUEST)
                     .entity(toMap(e, Response.Status.BAD_REQUEST))
                     .build();
@@ -79,6 +79,7 @@ public class RestRules {
             listener.remove(id);
             response = Response.ok().build();
         } catch (RestNotFoundException e) {
+            log.info("Remove request invalid: {}", e.getMessage());
             e.printStackTrace();
             response = Response.status(Response.Status.NOT_FOUND)
                     .entity(toMap(e, Response.Status.NOT_FOUND))
@@ -115,6 +116,7 @@ public class RestRules {
             listener.synchronize(parseList(json));
             response = Response.ok().build();
         } catch (RestInvalidException e) {
+            log.info("Synchronize request was invalid: {}", e.getMessage());
             e.printStackTrace();
             response = Response.status(Response.Status.BAD_REQUEST)
                     .entity(toMap(e, Response.Status.BAD_REQUEST))
