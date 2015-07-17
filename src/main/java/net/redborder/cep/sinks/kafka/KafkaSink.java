@@ -1,8 +1,9 @@
-package net.redborder.cep.sources.kafka;
+package net.redborder.cep.sinks.kafka;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
+import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.util.ConfigData;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -12,13 +13,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-public class ProducerManager {
-    private static final Logger log = LoggerFactory.getLogger(ProducerManager.class);
+public class KafkaSink implements Sink {
+    private static final Logger log = LoggerFactory.getLogger(KafkaSink.class);
 
     private Producer<String, String> producer;
     private ObjectMapper objectMapper;
 
-    public ProducerManager() {
+    public KafkaSink() {
         objectMapper = new ObjectMapper();
 
         Properties props = new Properties();
@@ -30,10 +31,16 @@ public class ProducerManager {
         props.put("producer.type", "async");
         props.put("queue.buffering.max.messages", "10000");
         props.put("queue.buffering.max.ms", "500");
-        props.put("partitioner.class", "net.redborder.cep.sources.kafka.SimplePartitioner");
+        props.put("partitioner.class", "net.redborder.cep.senders.kafka.SimplePartitioner");
 
         ProducerConfig config = new ProducerConfig(props);
         producer = new Producer<>(config);
+    }
+
+    @Override
+    public void process(String streamName, String topic, Map<String, Object> message) {
+        String clientMac = (String) message.get("client_mac");
+        send(topic, clientMac, message);
     }
 
     public void send(String topic, String key, Map<String, Object> message) {
@@ -47,6 +54,6 @@ public class ProducerManager {
     }
 
     public void shutdown() {
-         producer.close();
+        producer.close();
     }
 }

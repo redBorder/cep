@@ -1,11 +1,11 @@
 package net.redborder.cep;
 
 import net.redborder.cep.rest.RestManager;
-import net.redborder.cep.senders.EventSender;
-import net.redborder.cep.senders.KafkaSender;
+import net.redborder.cep.sinks.Sink;
+import net.redborder.cep.sinks.kafka.KafkaSink;
 import net.redborder.cep.siddhi.SiddhiHandler;
 import net.redborder.cep.sources.SourcesManager;
-import net.redborder.cep.sources.kafka.ProducerManager;
+import net.redborder.cep.sinks.kafka.ProducerManager;
 import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
 
@@ -17,10 +17,8 @@ public class CorrelationService {
         if (args.length >= 1) ConfigData.setConfigFile(args[0]);
         else ConfigData.setConfigFile(DEFAULT_CONFIG_FILE);
 
-        // ProducerManager is in charge of emitting messages from this application to kafka
-        // The KafkaReceiver wraps the producer manager in order to be used by siddhi handler
-        ProducerManager producerManager = new ProducerManager();
-        EventSender eventReceiver = new KafkaSender(producerManager);
+        // The KafkaSink wraps the kafka producer in order to be used by siddhi handler
+        Sink eventReceiver = new KafkaSink();
 
         // Siddhi is in charge of processing the events coming from kafka, interpreting
         // the queries that comes from the REST API and correlating the events

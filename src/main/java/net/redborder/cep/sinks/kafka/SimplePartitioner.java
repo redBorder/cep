@@ -1,4 +1,4 @@
-package net.redborder.cep.sources.kafka;
+package net.redborder.cep.sinks.kafka;
 
 import kafka.producer.Partitioner;
 import kafka.utils.VerifiableProperties;

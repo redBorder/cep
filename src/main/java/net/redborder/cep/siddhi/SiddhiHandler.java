@@ -5,8 +5,8 @@ import net.redborder.cep.rest.RestListener;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
-import net.redborder.cep.senders.ConsoleSender;
-import net.redborder.cep.senders.EventSender;
+import net.redborder.cep.sinks.console.ConsoleSink;
+import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.siddhi.exceptions.AlreadyExistsException;
 import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.InvalidExecutionPlanException;
@@ -33,7 +33,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private ObjectMapper objectMapper;
     private Map<String, SiddhiPlan> executionPlans;
 
-    public SiddhiHandler(EventSender eventReceiver) {
+    public SiddhiHandler(Sink eventReceiver) {
         this.siddhiManager = new SiddhiManager();
         this.siddhiCallback = new SiddhiCallback(eventReceiver);
         this.objectMapper = new ObjectMapper();
@@ -41,7 +41,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     }
 
     public SiddhiHandler() {
-        this(new ConsoleSender());
+        this(new ConsoleSink());
     }
 
     public void stop() {
