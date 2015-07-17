@@ -17,17 +17,17 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class ResourceTest extends JerseyTest {
+public class RestRulesTest extends JerseyTest {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected Application configure() {
-        return new ResourceConfig(Resource.class);
+        return new ResourceConfig(RestRules.class);
     }
 
     @BeforeClass
     public static void init() {
-        URL testConfigPath = ResourceTest.class.getClassLoader().getResource("config.yml");
+        URL testConfigPath = RestRulesTest.class.getClassLoader().getResource("config.yml");
         ConfigData.setConfigFile(testConfigPath.getFile());
         SiddhiHandler siddhiHandler = new SiddhiHandler();
         RestManager.startServer("http://localhost:8080/", siddhiHandler);

@@ -18,8 +18,8 @@ import java.util.Map;
 
 @Singleton
 @Path("/v1/")
-public class Resource {
-    private final Logger log = LoggerFactory.getLogger(Resource.class);
+public class RestRules {
+    private final Logger log = LoggerFactory.getLogger(RestRules.class);
     private ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -143,8 +143,8 @@ public class Resource {
         Response response;
 
         try {
-            log.info("List request");
             List<Map<String, Object>> list = listener.list();
+            log.info("List request {}", list);
             response = Response.ok().entity(list).build();
         } catch (Exception e) {
             e.printStackTrace();

@@ -65,7 +65,6 @@ public class ConsumerManager {
                     log.warn("Couldn't discover partitions for topic " + topicName, e);
                 }
 
-                log.info("Got {} partitions from topic {}", currentPartitions, topicName);
                 Topic topic = new Topic(topicName, currentPartitions, parser, new EventProducer(disruptor.getRingBuffer()));
                 topics.add(topic);
 
