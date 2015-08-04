@@ -1,9 +1,6 @@
 package net.redborder.cep.util;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigData {
     private static ConfigFile configFile;
@@ -39,7 +36,7 @@ public class ConfigData {
     }
 
     public static List<Map<String, Object>> getSources() {
-        return configFile.get("sources");
+        return configFile.getOrDefault("sources", new ArrayList<Map<String, Object>>());
     }
 
     @SuppressWarnings("unchecked")

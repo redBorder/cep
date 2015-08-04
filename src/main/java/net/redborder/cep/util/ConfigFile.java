@@ -25,11 +25,11 @@ public class ConfigFile {
         try {
             map = (Map<String, Object>) Yaml.load(new File(configFile));
         } catch (FileNotFoundException e) {
-            log.warn("Couldn't find config file {}", configFile);
-            map = Collections.emptyMap();
+            log.error("Couldn't find config file {}", configFile);
+            System.exit(1);
         } catch (YamlException e) {
             log.error("Couldn't read config file {}. Is it a YAML file?", configFile);
-            map = Collections.emptyMap();
+            System.exit(1);
         }
     }
 
