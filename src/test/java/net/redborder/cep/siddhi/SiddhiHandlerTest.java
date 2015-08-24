@@ -62,6 +62,25 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.add(executionPlanMap);
     }
 
+    @Test
+    public void addPresentWithHigherVersion() throws RestException {
+        SiddhiHandler siddhiHandler = new SiddhiHandler();
+
+        // Add an execution plan with id testID
+        Map<String, Object> executionPlanMap = new HashMap<>();
+        Map<String, String> outputTopics = new HashMap<>();
+        outputTopics.put("testOutput", "outputTopic");
+        executionPlanMap.put("id", "testID");
+        executionPlanMap.put("input", Arrays.asList("test", "test2"));
+        executionPlanMap.put("output", outputTopics);
+        executionPlanMap.put("executionPlan", "from test select a insert into testOutput");
+        siddhiHandler.add(executionPlanMap);
+
+        // Try to add it again
+        executionPlanMap.put("version", 1);
+        siddhiHandler.add(executionPlanMap);
+    }
+
     @Test(expected=RestException.class)
     public void addInvalid() throws RestException {
         SiddhiHandler siddhiHandler = new SiddhiHandler();
@@ -205,7 +224,6 @@ public class SiddhiHandlerTest extends TestCase {
 
         // Now add three more execution plans
         executionPlanMap2.put("id", "testID4");
-        executionPlanMap3.put("id", "testID3");
         executionPlanMap3.put("version", 1);
         executionPlans.add(executionPlanMap);
         executionPlans.add(executionPlanMap2);

@@ -152,7 +152,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
         for (String id : newExecutionPlansIds) {
             SiddhiPlan present = executionPlans.get(id);
-            SiddhiPlan newer = executionPlans.get(id);
+            SiddhiPlan newer = newExecutionPlans.get(id);
 
             if (present.getVersion() >= newer.getVersion()) {
                 newExecutionPlans.remove(id);
@@ -162,7 +162,6 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
         // Add the newer elements
         newExecutionPlansIds = new TreeSet<>(newExecutionPlans.keySet());
-        newExecutionPlansIds.removeAll(presentExecutionPlansIds);
 
         for (String id : newExecutionPlansIds) {
             SiddhiPlan newer = newExecutionPlans.get(id);
