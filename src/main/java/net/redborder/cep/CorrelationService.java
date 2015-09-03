@@ -22,6 +22,8 @@ public class CorrelationService {
         // Siddhi is in charge of processing the events coming from kafka, interpreting
         // the queries that comes from the REST API and correlating the events
         final SiddhiHandler siddhiHandler = new SiddhiHandler(eventReceiver);
+
+        // This will add the rules that are present on the state file
         siddhiHandler.restore();
 
         // ParserManager prepare all parsers and create relations between parsers and sources.

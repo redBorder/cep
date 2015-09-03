@@ -64,6 +64,7 @@ public class RestRulesTest extends JerseyTest {
         elementMap.put("output", outputTopics);
         // elementMap.put("executionPlan", "from test select src, bytes insert into outputStream;");
 
+
         String json = objectMapper.writeValueAsString(elementMap);
 
         Entity<String> entity = Entity.json(json);

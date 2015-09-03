@@ -11,15 +11,36 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ *  This class represents a YAML file on the filesystem from
+ *  which the config values will be read and accessed.
+ */
+
 public class ConfigFile {
     private static final Logger log = LoggerFactory.getLogger(ConfigFile.class);
+
+    // The name of the file that will be read
     private final String configFile;
+
+    // The data loaded from the file
     private Map<String, Object> map;
+
+    /**
+     * Constructor.
+     * Takes the file name to read, and loads the data from it calling the reload method
+     *
+     * @param configFile The path to the file that will be open
+     */
 
     public ConfigFile(String configFile) {
         this.configFile = configFile;
         reload();
     }
+
+    /**
+     * This method updates de instance attribute map with the data loaded
+     * from the file configFile
+     */
 
     public void reload() {
         try {
@@ -35,6 +56,7 @@ public class ConfigFile {
 
     /**
      * Getter.
+     * Returns the value associated with the key property on the config file
      *
      * @param property Property to read from the general section
      * @return Property read
@@ -51,7 +73,9 @@ public class ConfigFile {
     }
 
     /**
-     * Getter with a default value
+     * Getter with a default value.
+     * Returns the value associated with the key property on the config file.
+     * If the key does not exist, returns the default value.
      *
      * @param property Property to read from the general section
      *                 If it's not present on the section, give it a default value
@@ -65,11 +89,14 @@ public class ConfigFile {
     }
 
     /**
-     * Gets the list of keys from a map.
+     * Gets a list of keys.
+     * Given the name of a map property on the config file, returns
+     * the list of keys present on that map.
      *
      * @param property Property to read from the general section
      * @return Property read
      */
+
     public Set<String> getKeys(String property) {
         Map<String, Object> fromFile = get(property);
         Set<String> emptySet = Collections.emptySet();

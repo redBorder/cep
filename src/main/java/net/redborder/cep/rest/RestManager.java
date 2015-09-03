@@ -10,6 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 
+/**
+ * This class manages the state of the REST HTTP API.
+ * It is responsible for starting and stopping the HTTP server, and manages
+ * listeners and events produced by the API.
+ */
 public class RestManager {
     private static final Logger log = LoggerFactory.getLogger(RestManager.class);
     private static RestListener listener;
@@ -18,10 +23,19 @@ public class RestManager {
     private RestManager() {}
 
     /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
+     * Starts the HTTP server exposing the resources defined in the RestRules class.
+     * It takes a reference to an object that implements the RestListener interface,
+     * which will be notified every time the REST API receives a request of some type.
+     *
+     * @param wsUri The base URL of the HTTP REST API
+     * @param rl The RestListener object that will be notified when a user sends
+     *           an HTTP request to the API
+     * @see RestRules
+     * @see RestListener
      */
+
     public static void startServer(String wsUri, RestListener rl) {
-        // create a resource config that scans for JAX-RS resources and providers
+        // Create a resource config that scans for JAX-RS resources and providers
         ResourceConfig rc = new ResourceConfig()
                 .register(RestRules.class)
                 .register(JacksonFeature.class);
@@ -29,7 +43,7 @@ public class RestManager {
         // Set the listener for the petitions
         listener = rl;
 
-        // create a new instance of grizzly http server
+        // Create a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
         server = GrizzlyHttpServerFactory.createHttpServer(URI.create(wsUri), rc);
 
@@ -43,15 +57,31 @@ public class RestManager {
         log.info("HTTP server started");
     }
 
+    /**
+     * Returns true if the server is started
+     *
+     * @return true if the server is started, false otherwise
+     */
+
     public static boolean isStarted() {
         return server.isStarted();
     }
+
+    /**
+     * Stops the HTTP server.
+     */
 
     public static void stopServer() {
         if (server != null) {
             server.shutdown();
         }
     }
+
+    /**
+     * Returns the object that is acting as a listener
+     *
+     * @return The RestListener object that is been used as a listener
+     */
 
     public static RestListener getListener() {
         return listener;

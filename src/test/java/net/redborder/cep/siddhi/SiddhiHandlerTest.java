@@ -41,7 +41,7 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.add(executionPlanMap);
 
         // Assert that the execution plan was added
-        assertTrue(siddhiHandler.getExecutionPlans().containsKey("testID"));
+        assertTrue(siddhiHandler.getSiddhiPlans().containsKey("testID"));
     }
 
     @Test(expected=RestException.class)
@@ -134,7 +134,7 @@ public class SiddhiHandlerTest extends TestCase {
         // Remove it
         siddhiHandler.remove("testID");
 
-        assertTrue(siddhiHandler.getExecutionPlans().isEmpty());
+        assertTrue(siddhiHandler.getSiddhiPlans().isEmpty());
     }
 
     @Test(expected = RestNotFoundException.class)
@@ -176,7 +176,7 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.synchronize(executionPlans);
 
         // Check that both have been added
-        assertEquals(2, siddhiHandler.getExecutionPlans().size());
+        assertEquals(2, siddhiHandler.getSiddhiPlans().size());
     }
 
     @Test
@@ -239,7 +239,7 @@ public class SiddhiHandlerTest extends TestCase {
         expectedIds.add("testID4");
 
         // Check that both have been added
-        assertEquals(expectedIds, siddhiHandler.getExecutionPlans().keySet());
+        assertEquals(expectedIds, siddhiHandler.getSiddhiPlans().keySet());
     }
 
     @Test(expected = RestException.class)

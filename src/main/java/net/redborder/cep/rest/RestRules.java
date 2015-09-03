@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class implements the methods available from the HTTP REST API.
+ */
+
 @Singleton
 @Path("/v1/")
 public class RestRules {
@@ -27,7 +31,6 @@ public class RestRules {
      * It sends an add operation to the listener passing it the JSON data.
      *
      * @param json A string in JSON format.
-     *
      * @return Response with the appropriate HTTP code.
      */
 
@@ -62,7 +65,6 @@ public class RestRules {
      * It sends an remove operation to the listener passing it an ID.
      *
      * @param id The ID sent by the user on the request
-     *
      * @return Response with the appropriate HTTP code.
      */
 
@@ -99,7 +101,6 @@ public class RestRules {
      * It expects a JSON string with a list of maps.
      *
      * @param json The ID sent by the user on the request
-     *
      * @return Response with the appropriate HTTP code.
      */
 
@@ -158,8 +159,14 @@ public class RestRules {
         return response;
     }
 
+    // Helper methods
+
     /**
-     * Helper methods
+     * This method returns a map from a given json string
+     *
+     * @param str The JSON string to parse
+     * @return A map with the JSON contents
+     * @throws RestException If the string does not have a valid JSON format
      */
 
     private Map<String, Object> parseMap(String str) throws RestException {
@@ -171,6 +178,14 @@ public class RestRules {
         }
     }
 
+    /**
+     * This method returns a list from a given json string
+     *
+     * @param str The JSON string to parse
+     * @return A list with the JSON contents
+     * @throws RestException If the string does not have a valid JSON format
+     */
+
     private List<Map<String, Object>> parseList(String str) throws RestException {
         try {
             List<Map<String, Object>> result = mapper.readValue(str, List.class);
@@ -179,6 +194,16 @@ public class RestRules {
             throw new RestInvalidException("couldn't parse json", e);
         }
     }
+
+    /**
+     * Returns a map representation of a throwable object with a given status code.
+     * The map has a status entry with the status code, and a message entry with the message
+     * of the throwable object.
+     *
+     * @param e The throwable object
+     * @param status The status code
+     * @return A map representation of the error
+     */
 
     private Map<String, Object> toMap(Throwable e, Response.Status status) {
         Map<String, Object> result = new HashMap<>();

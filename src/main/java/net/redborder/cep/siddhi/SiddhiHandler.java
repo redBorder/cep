@@ -25,50 +25,115 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * This class handles the state of the correlation engine, which is Siddhi.
+ * It also manages the events coming from the HTTP API, and the messages produced by
+ * the sources.
+ *
+ * @see RestListener
+ * @see net.redborder.cep.sources.Source
+ * @see SiddhiManager
+ */
+
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     private final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
 
+    // The manager that we use as the interface to Siddhi
     private SiddhiManager siddhiManager;
+
+    //
     private SiddhiCallback siddhiCallback;
+
+    // An object to parse JSON messages
     private ObjectMapper objectMapper;
-    private Map<String, SiddhiPlan> executionPlans;
+
+    // The list of siddhi plans that are currently running
+    private Map<String, SiddhiPlan> siddhiPlans;
+
+    /**
+     * Creates a new Siddhi Handler.
+     *
+     * @param eventReceiver The sink that will process the messages that Siddhi generates
+     */
 
     public SiddhiHandler(Sink eventReceiver) {
         this.siddhiManager = new SiddhiManager();
         this.siddhiCallback = new SiddhiCallback(eventReceiver);
         this.objectMapper = new ObjectMapper();
-        this.executionPlans = new HashMap<>();
+        this.siddhiPlans = new HashMap<>();
     }
+
+    /**
+     * Creates a new Siddhi Handler with ConsoleSink as the sink.
+     *
+     * @see #SiddhiHandler()
+     * @see ConsoleSink
+     */
 
     public SiddhiHandler() {
         this(new ConsoleSink());
     }
 
-    public void stop() {
-        log.info("Stopping execution plans...");
+    /**
+     * Stops all the siddhi plans that are currently running
+     */
 
-        for (SiddhiPlan siddhiPlan : executionPlans.values()) {
+    public void stop() {
+        log.info("Stopping siddhi plans...");
+
+        for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
             siddhiPlan.stop();
         }
     }
 
-    public Map<String, SiddhiPlan> getExecutionPlans() {
-        return Collections.unmodifiableMap(executionPlans);
+    /**
+     * Returns an unmodifiable map with the currently running siddhi plans.
+     * The key of each entry is the siddhi plan id, and the value is an
+     * SiddhiPlan object that describes that siddhi plan.
+     *
+     * @return Unmodifiable map of running siddhi plans
+     */
+
+    public Map<String, SiddhiPlan> getSiddhiPlans() {
+        return Collections.unmodifiableMap(siddhiPlans);
     }
+
+    /**
+     * This method is called every time that a message is received by any
+     * source that is currently started on the application.
+     * <p>This method forwards each message received to every siddhi plan
+     * that has marked the message's stream as an input stream.
+     *
+     * @param mapEvent The message received from the source
+     * @param sequence unused
+     * @param endOfBatch unused
+     * @throws Exception if there is an error when an siddhi plans read the message
+     */
 
     @Override
     public void onEvent(MapEvent mapEvent, long sequence, boolean endOfBatch) throws Exception {
-        if (!executionPlans.isEmpty()) {
+        if (!siddhiPlans.isEmpty()) {
             Map<String, Object> data = mapEvent.getData();
             String topic = mapEvent.getSource();
 
-            for (SiddhiPlan siddhiPlan : executionPlans.values()) {
+            for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
                 if (siddhiPlan.getInput().contains(topic)) {
                     siddhiPlan.send(topic, data);
                 }
             }
         }
     }
+
+    /**
+     * This method is called when the HTTP REST API receives an add request from a user.
+     * It creates a new siddhi plan from the map given, and tries to add it.
+     *
+     * @param element The map representation of the JSON that the user provided.
+     * @throws RestException If the map given does not follow the right siddhi plan schema, or if the
+     *         SiddhiPlan could not be added.
+     * @see #add(SiddhiPlan)
+     * @see SiddhiPlan
+     */
 
     @Override
     public void add(Map<String, Object> element) throws RestException {
@@ -80,23 +145,35 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
     }
 
+    /**
+     * This method adds a new siddhi plan.
+     *
+     * @param siddhiPlan The SiddhiPlan to be added
+     * @throws ExecutionPlanException if there is a SiddhiPlan with an equal or greater version already running
+     *         or if the execution plan associated with the siddhi plan is invalid
+     */
+
     public synchronized void add(SiddhiPlan siddhiPlan) throws ExecutionPlanException {
-        SiddhiPlan present = executionPlans.get(siddhiPlan.getId());
+        // Check if there is a plan already running with that ID
+        SiddhiPlan present = siddhiPlans.get(siddhiPlan.getId());
         boolean mustBeRemoved = false;
 
+        // If it is already present, check the version.
+        // If the version of the siddhi plan already running is equal or greater, then throw an exception
         if (present != null) {
             if (present.getVersion() >= siddhiPlan.getVersion()) {
-                throw new AlreadyExistsException("execution plan with id " + siddhiPlan.getId() + " already exists with an equal or greater version");
+                throw new AlreadyExistsException("siddhi plan with id " + siddhiPlan.getId() + " already exists with an equal or greater version");
             } else {
                 mustBeRemoved = true;
             }
         }
 
+        // Add the siddhi plan
         try {
-            log.info("Adding new execution plan: {}", siddhiPlan.toMap());
+            log.info("Adding new siddhi plan: {}", siddhiPlan.toMap());
 
             siddhiPlan.start(siddhiManager, siddhiCallback);
-            executionPlans.put(siddhiPlan.getId(), siddhiPlan);
+            siddhiPlans.put(siddhiPlan.getId(), siddhiPlan);
             save();
 
             if (mustBeRemoved) {
@@ -107,21 +184,36 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
     }
 
+    /**
+     * Removes a siddhi plan with the id given.
+     *
+     * @param id The id of the siddhi plan that will be removed
+     * @throws RestException if there is not siddhi plan with the id given
+     */
+
     @Override
     public synchronized void remove(String id) throws RestException {
-        SiddhiPlan siddhiPlan = executionPlans.get(id);
+        SiddhiPlan siddhiPlan = siddhiPlans.get(id);
 
         if (siddhiPlan != null) {
             siddhiPlan.stop();
-            executionPlans.remove(id);
+            siddhiPlans.remove(id);
             save();
 
-            log.info("Execution plan with the id {} has been removed", id);
-            log.info("Current queries: {}", executionPlans.keySet());
+            log.info("Siddhi plan with the id {} has been removed", id);
+            log.info("Current queries: {}", siddhiPlans.keySet());
         } else {
-            throw new RestNotFoundException("Execution plan with id " + id + " is not present");
+            throw new RestNotFoundException("Siddhi plan with id " + id + " is not present");
         }
     }
+
+    /**
+     * Synchronizes the list of elements provided.
+     *
+     * @param elements A list of elements to synchronize
+     * @throws RestException
+     * @see RestListener#synchronize(List)
+     */
 
     @Override
     public synchronized void synchronize(List<Map<String, Object>> elements) throws RestException {
@@ -146,12 +238,12 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
 
         // Remove the execution plans that are already present and with an equal or greater version
-        Set<String> presentExecutionPlansIds = new TreeSet<>(executionPlans.keySet());
+        Set<String> presentExecutionPlansIds = new TreeSet<>(siddhiPlans.keySet());
         Set<String> newExecutionPlansIds = new TreeSet<>(newExecutionPlans.keySet());
         newExecutionPlansIds.retainAll(presentExecutionPlansIds);
 
         for (String id : newExecutionPlansIds) {
-            SiddhiPlan present = executionPlans.get(id);
+            SiddhiPlan present = siddhiPlans.get(id);
             SiddhiPlan newer = newExecutionPlans.get(id);
 
             if (present.getVersion() >= newer.getVersion()) {
@@ -175,7 +267,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         }
 
         // Now remove the ones that are not necessary anymore
-        presentExecutionPlansIds = new TreeSet<>(executionPlans.keySet());
+        presentExecutionPlansIds = new TreeSet<>(siddhiPlans.keySet());
         presentExecutionPlansIds.removeAll(executionPlansToKeep);
 
         for (String id : presentExecutionPlansIds) {
@@ -186,16 +278,25 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         save();
     }
 
+    /**
+     * @return A list of the currently running siddhi plans
+     */
+
     @Override
     public List<Map<String, Object>> list() throws RestException {
         List<Map<String, Object>> listQueries = new ArrayList<>();
 
-        for (SiddhiPlan siddhiPlan : executionPlans.values()) {
+        for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
             listQueries.add(siddhiPlan.toMap());
         }
 
         return listQueries;
     }
+
+    /**
+     * Stores the list of currently running siddhi plans into an state file.
+     * The path to the state file is provided by the config file.
+     */
 
     public synchronized void save() {
         String stateFilePath = ConfigData.getStateFile();
@@ -203,7 +304,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
 
         List<Map<String, Object>> executionPlansList = new ArrayList<>();
 
-        for (SiddhiPlan siddhiPlan : executionPlans.values()) {
+        for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
             Map<String, Object> executionPlanMap = siddhiPlan.toMap();
             executionPlansList.add(executionPlanMap);
         }
@@ -217,6 +318,10 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             log.error("Couldn't write the state file");
         }
     }
+
+    /**
+     * Restores a list of siddhi plans from a state file provided by the config file.
+     */
 
     public synchronized void restore() {
         String stateFilePath = ConfigData.getStateFile();
