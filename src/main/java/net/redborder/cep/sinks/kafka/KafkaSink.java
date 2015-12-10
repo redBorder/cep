@@ -43,10 +43,11 @@ public class KafkaSink extends Sink {
         super(properties);
         // The producer config attributes
         Properties props = new Properties();
-        if (properties != null && properties.get("kafka_brokers") != null)
+        if (properties != null && properties.get("kafka_brokers") != null) {
             props.put("metadata.broker.list", properties.get("kafka_brokers"));
-        else
+        } else {
             props.put("metadata.broker.list", "127.0.0.1:9092");
+        }
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("request.required.acks", "1");
         props.put("message.send.max.retries", "60");

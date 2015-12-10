@@ -67,7 +67,6 @@ public class SinksManager {
     private SinksManager(String sinkName, Sink sink){
         sinks.put(sinkName, sink);
         start();
-
     }
 
     /**
