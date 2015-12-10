@@ -7,8 +7,8 @@ import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.sources.disruptor.MapEventFactory;
 import net.redborder.cep.sources.parsers.ParsersManager;
 import net.redborder.cep.util.ConfigData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
  */
 
 public abstract class Source {
-    private static final Logger log = LoggerFactory.getLogger(Source.class);
+    private static final Logger log = LogManager.getLogger(Source.class);
 
     // The instance of disruptor that will consume the events that are produced by this source
     public EventProducer eventProducer;

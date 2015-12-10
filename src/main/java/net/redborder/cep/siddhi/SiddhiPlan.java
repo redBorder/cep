@@ -5,8 +5,8 @@ import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.InvalidExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.TransformException;
 import net.redborder.cep.util.ConfigData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.siddhi.core.ExecutionPlanRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
@@ -23,7 +23,7 @@ import java.util.*;
  */
 
 public class SiddhiPlan {
-    private final static Logger log = LoggerFactory.getLogger(SiddhiPlan.class);
+    private final static Logger log = LogManager.getLogger(SiddhiPlan.class);
 
     // The list of streams definitions for every input stream defined on the config file
     private final static Map<String, StreamDefinition> streamDefinitions = new HashMap<>();

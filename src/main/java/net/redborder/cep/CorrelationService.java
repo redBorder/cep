@@ -1,8 +1,7 @@
 package net.redborder.cep;
 
 import net.redborder.cep.rest.RestManager;
-import net.redborder.cep.sinks.Sink;
-import net.redborder.cep.sinks.kafka.KafkaSink;
+import net.redborder.cep.sinks.SinksManager;
 import net.redborder.cep.siddhi.SiddhiHandler;
 import net.redborder.cep.sources.SourcesManager;
 import net.redborder.cep.sources.parsers.ParsersManager;
@@ -17,11 +16,11 @@ public class CorrelationService {
         else ConfigData.setConfigFile(DEFAULT_CONFIG_FILE);
 
         // The KafkaSink wraps the kafka producer in order to be used by siddhi handler
-        final Sink eventReceiver = new KafkaSink();
+        final SinksManager sinksManager = new SinksManager();
 
         // Siddhi is in charge of processing the events coming from kafka, interpreting
         // the queries that comes from the REST API and correlating the events
-        final SiddhiHandler siddhiHandler = new SiddhiHandler(eventReceiver);
+        final SiddhiHandler siddhiHandler = new SiddhiHandler(sinksManager);
 
         // This will add the rules that are present on the state file
         siddhiHandler.restore();
@@ -44,7 +43,7 @@ public class CorrelationService {
             public void run() {
                 siddhiHandler.stop();
                 sourcesManager.shutdown();
-                eventReceiver.shutdown();
+                sinksManager.shutdown();
                 RestManager.stopServer();
             }
         });

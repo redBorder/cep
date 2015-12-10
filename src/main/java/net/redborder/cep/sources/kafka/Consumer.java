@@ -4,8 +4,8 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import net.redborder.cep.sources.Source;
 import net.redborder.cep.sources.parsers.Parser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
  */
 
 public class Consumer implements Runnable {
-    private final static Logger log = LoggerFactory.getLogger(Consumer.class);
+    private final static Logger log = LogManager.getLogger(Consumer.class);
 
     // The KafkaStream from where this thread will consume messages
     // This object represents a partition on a topic.
