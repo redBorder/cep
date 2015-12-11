@@ -1,6 +1,6 @@
 package net.redborder.cep.siddhi;
 
-import net.redborder.cep.sinks.Sink;
+import net.redborder.cep.sinks.SinksManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -15,17 +15,17 @@ import java.util.Map;
  */
 
 public class SiddhiCallback {
-    final Sink eventReceiver;
+    final SinksManager sinksManager;
 
     /**
      * Creates a new factory that will produce callbacks that send events
      * to the given sink.
      *
-     * @param eventReceiver The sink that will receive the events
+     * @param sinksManager The sink that will receive the events
      */
 
-    public SiddhiCallback(Sink eventReceiver) {
-        this.eventReceiver = eventReceiver;
+    public SiddhiCallback(SinksManager sinksManager) {
+        this.sinksManager = sinksManager;
     }
 
     /**
@@ -52,8 +52,8 @@ public class SiddhiCallback {
                         result.put(columnName, object);
                     }
 
-                    // Send the message to the sink
-                    eventReceiver.process(streamName, topic, result);
+                    // Send the message to every sink
+                    sinksManager.process(streamName, topic, result);
                 }
             }
         };

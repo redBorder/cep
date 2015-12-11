@@ -5,16 +5,16 @@ import net.redborder.cep.rest.RestListener;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
+import net.redborder.cep.sinks.SinksManager;
 import net.redborder.cep.sinks.console.ConsoleSink;
-import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.siddhi.exceptions.AlreadyExistsException;
 import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.InvalidExecutionPlanException;
 import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.util.ConfigData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
@@ -36,7 +36,7 @@ import java.util.*;
  */
 
 public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
-    private final Logger log = LoggerFactory.getLogger(SiddhiHandler.class);
+    private final Logger log = LogManager.getLogger(SiddhiHandler.class);
 
     // The manager that we use as the interface to Siddhi
     private SiddhiManager siddhiManager;
@@ -53,12 +53,12 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     /**
      * Creates a new Siddhi Handler.
      *
-     * @param eventReceiver The sink that will process the messages that Siddhi generates
+     * @param sinksManager The sink manager that will process the messages that Siddhi generates
      */
 
-    public SiddhiHandler(Sink eventReceiver) {
+    public SiddhiHandler(SinksManager sinksManager) {
         this.siddhiManager = new SiddhiManager();
-        this.siddhiCallback = new SiddhiCallback(eventReceiver);
+        this.siddhiCallback = new SiddhiCallback(sinksManager);
         this.objectMapper = new ObjectMapper();
         this.siddhiPlans = new HashMap<>();
     }
@@ -71,7 +71,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
      */
 
     public SiddhiHandler() {
-        this(new ConsoleSink());
+        this(SinksManager.withConsoleSink());
     }
 
     /**

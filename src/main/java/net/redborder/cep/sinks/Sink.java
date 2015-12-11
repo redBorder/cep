@@ -3,11 +3,18 @@ package net.redborder.cep.sinks;
 import java.util.Map;
 
 /**
- * This interface represents a output system that will receive every message
+ * This abstract class represents a output system that will receive every message
  * produced by the CEP, and will output those messages to an external system.
  */
 
-public interface Sink {
+public abstract class Sink {
+
+    // The list of properties associated with this instance on the config file
+    public Map<String, Object> properties;
+
+    public Sink(Map<String, Object> properties) {
+        this.properties = properties;
+    }
 
     /**
      * This method process the given message from the given stream input, and
@@ -19,12 +26,19 @@ public interface Sink {
      * @param message The message
      */
 
-    void process(String streamName, String topic, Map<String, Object> message);
+    public abstract void process(String streamName, String topic, Map<String, Object> message);
+
+    /**
+     * This method starts the sink, requesting resources that may be
+     * needed.
+     */
+
+    public abstract void start();
 
     /**
      * This method stops the sink, releasing resources that may have been
      * reserved upon initialization.
      */
 
-    void shutdown();
+    public abstract void shutdown();
 }

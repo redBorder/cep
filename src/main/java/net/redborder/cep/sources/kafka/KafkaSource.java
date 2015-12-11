@@ -10,10 +10,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class KafkaSource extends Source {
-    private static final Logger log = LoggerFactory.getLogger(KafkaSource.class);
+    private static final Logger log = LogManager.getLogger(KafkaSource.class);
 
     // The Kafka Consumer Object API
     private ConsumerConnector consumer;

@@ -3,9 +3,9 @@ package net.redborder.cep.rest;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
@@ -23,7 +23,7 @@ import java.util.Map;
 @Singleton
 @Path("/v1/")
 public class RestRules {
-    private final Logger log = LoggerFactory.getLogger(RestRules.class);
+    private final Logger log = LogManager.getLogger(RestRules.class);
     private ObjectMapper mapper = new ObjectMapper();
 
     /**

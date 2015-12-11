@@ -109,6 +109,18 @@ public class ConfigData {
     }
 
     /**
+     * Gets the sinks specified on the config file as a list of maps, where
+     * each map has information about the name of the sink, the class that
+     * implements it and it's properties.
+     *
+     * @return A list of maps, where each map is a source with name, class and properties.
+     */
+
+    public static List<Map<String, Object>> getSinks() {
+        return configFile.getOrDefault("sinks", new ArrayList<Map<String, Object>>());
+    }
+
+    /**
      * Gets the map of parsers specified on the config file. The key of each
      * entry is the parser name, and the value associated is the class that
      * will implement that parser.
