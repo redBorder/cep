@@ -1,9 +1,9 @@
 package net.redborder.cep.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ho.yaml.Yaml;
 import org.ho.yaml.exception.YamlException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +17,7 @@ import java.util.Set;
  */
 
 public class ConfigFile {
-    private static final Logger log = LoggerFactory.getLogger(ConfigFile.class);
+    private static final Logger log = LogManager.getLogger(ConfigFile.class);
 
     // The name of the file that will be read
     private final String configFile;

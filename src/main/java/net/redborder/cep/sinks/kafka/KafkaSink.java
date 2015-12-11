@@ -5,9 +5,9 @@ import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.util.ConfigData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,8 +21,8 @@ import java.util.Properties;
  * @see Sink
  */
 
-public class KafkaSink implements Sink {
-    private static final Logger log = LoggerFactory.getLogger(KafkaSink.class);
+public class KafkaSink extends Sink {
+    private static final Logger log = LogManager.getLogger(KafkaSink.class);
 
     // The kafka producer
     private Producer<String, String> producer;
@@ -34,12 +34,20 @@ public class KafkaSink implements Sink {
      * Creates a new KafkaSink.
      * This method initializes and starts a new Kafka producer that will be
      * used to produce messages to kafka topics.
+     * @param properties KafkaSink propertiers. You should provide a kafka_broker property
+     *                   set to the Kafka host address. If none is provided localhost will
+     *                   be used
      */
 
-    public KafkaSink() {
+    public KafkaSink(Map<String, Object> properties) {
+        super(properties);
         // The producer config attributes
         Properties props = new Properties();
-        props.put("metadata.broker.list", ConfigData.getKafkaBrokers());
+        if (properties != null && properties.get("kafka_brokers") != null) {
+            props.put("metadata.broker.list", properties.get("kafka_brokers"));
+        } else {
+            props.put("metadata.broker.list", "127.0.0.1:9092");
+        }
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("request.required.acks", "1");
         props.put("message.send.max.retries", "60");
@@ -52,6 +60,10 @@ public class KafkaSink implements Sink {
         // Initialize the producer
         ProducerConfig config = new ProducerConfig(props);
         producer = new Producer<>(config);
+    }
+
+    @Override
+    public void start() {
     }
 
     /**
