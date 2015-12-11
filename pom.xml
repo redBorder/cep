@@ -4,11 +4,11 @@
 
     <groupId>net.redborder</groupId>
     <artifactId>cep</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
 
     <scm>
         <developerConnection>scm:git:git@github.com:redBorder/cep.git</developerConnection>
-        <tag>cep-0.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
