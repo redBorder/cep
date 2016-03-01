@@ -15,7 +15,7 @@
         </Console>
 
 
-        <Syslog name="SyslogSink" host="127.0.0.1" format="RFC5424" facility="USER"
+        <Syslog name="SyslogSink-188.226.234.54" host="188.226.234.54" format="RFC5424" facility="USER"
                 port="514"
                 protocol="UDP"
                 appName="cep" includeMDC="true" enterpriseNumber="18060" newLine="true"
@@ -28,7 +28,7 @@
     </Appenders>
     <Loggers>
         <Logger name="net.redborder.cep.sinks.syslog.SyslogSink" level="info" additivity="false">
-            <AppenderRef ref="SyslogSink-127.0.0.1"/>
+            <AppenderRef ref="SyslogSink-188.226.234.54"/>
         </Logger>
         <Root level="info">
             <AppenderRef ref="RollingAppender" />
