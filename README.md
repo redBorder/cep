@@ -1,6 +1,6 @@
 # redBorder Complex Event Processor
 [![Build Status](https://travis-ci.org/redBorder/cep.svg)](https://travis-ci.org/redBorder/cep)
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/de3ffaee924c418f8a3d4465d3d360cd)](https://www.codacy.com/app/carrodher/cep)
+[![Codacy Badge](https://api.codacy.com/project/badge/grade/de3ffaee924c418f8a3d4465d3d360cd)](https://www.codacy.com/app/redBorder/cep)
 
 As [Wikipedia](https://en.wikipedia.org/wiki/Complex_event_processing) states, Complex event processing, or CEP, is
 event processing that combines data from multiple sources to infer events or patterns that suggest more complicated
