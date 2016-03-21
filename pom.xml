@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-core</artifactId>
-            <version>3.0.0-alpha</version>
+            <version>3.0.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -73,13 +73,13 @@
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-query-api</artifactId>
-            <version>3.0.0-alpha</version>
+            <version>3.0.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-query-compiler</artifactId>
-            <version>3.0.0-alpha</version>
+            <version>3.0.3</version>
         </dependency>
 
         <!-- Jersey -->
