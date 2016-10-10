@@ -1,7 +1,6 @@
 package net.redborder.cep.sinks.syslog;
 
 import net.redborder.cep.sinks.Sink;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +16,18 @@ public class SyslogSink extends Sink {
 
     @Override
     public void process(String streamName, String topic, Map<String, Object> message) {
-        logger.info("RULE: [{}] ALERT: [{}]", streamName, message);
+        String key;
+        if (message.containsKey("__KEY")) {
+            key = (String) message.remove("__KEY");
+            process(streamName, topic, key, message);
+        } else {
+            logger.info("RULE: [{}] ALERT: [{}]", streamName, message);
+        }
+    }
+
+    @Override
+    public void process(String streamName, String topic, String key, Map<String, Object> message) {
+        logger.info("RULE: [{}] KEY: [{}] ALERT: [{}]", streamName, key, message);
     }
 
     @Override

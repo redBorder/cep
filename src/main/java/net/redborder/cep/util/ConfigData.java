@@ -35,7 +35,8 @@ public class ConfigData {
     }
 
     // Mark the constructor as private to avoid external instantiation
-    private ConfigData() { }
+    private ConfigData() {
+    }
 
     /**
      * Gets the kafka brokers string from the config file on the key
@@ -68,7 +69,7 @@ public class ConfigData {
      * If it is not specified on the config file, returns "http://localhost:8888/myapp/"
      *
      * @return The REST URI specified on config file, or "http://localhost:8888/myapp/"
-     *          if not specified
+     * if not specified
      */
 
     public static String getRESTURI() {
@@ -178,6 +179,10 @@ public class ConfigData {
     public static Map<String, String> getAttributes(String streamName) {
         Map<String, Object> topics = configFile.get("streams");
         Map<String, Object> streamData = (Map<String, Object>) topics.get(streamName);
-        return (Map<String, String>) streamData.get("attributes");
+        Map<String, String> attributes = (Map<String, String>) streamData.get("attributes");
+
+        //Add the __KEY attribute in order to produce keyed messages
+        attributes.put("__KEY", "string");
+        return attributes;
     }
 }

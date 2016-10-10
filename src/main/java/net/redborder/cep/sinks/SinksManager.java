@@ -64,16 +64,16 @@ public class SinksManager {
         start();
     }
 
-    private SinksManager(String sinkName, Sink sink){
+    private SinksManager(String sinkName, Sink sink) {
         sinks.put(sinkName, sink);
         start();
     }
 
     /**
-    * Create a new SinksManager with a Console Sink as the sole Sink
-    * */
+     * Create a new SinksManager with a Console Sink as the sole Sink
+     */
 
-    public static SinksManager withConsoleSink(){
+    public static SinksManager withConsoleSink() {
         return new SinksManager("console", new ConsoleSink(null));
     }
 
@@ -108,6 +108,16 @@ public class SinksManager {
     public void process(String streamName, String topic, Map<String, Object> message) {
         for (Sink sink : sinks.values()) {
             sink.process(streamName, topic, message);
+        }
+    }
+
+    /**
+     * Sends a process signal to all the sinks instantiated.
+     */
+
+    public void process(String streamName, String topic, String key, Map<String, Object> message) {
+        for (Sink sink : sinks.values()) {
+            sink.process(streamName, topic, key, message);
         }
     }
 

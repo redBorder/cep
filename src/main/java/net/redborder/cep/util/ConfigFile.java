@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *  This class represents a YAML file on the filesystem from
- *  which the config values will be read and accessed.
+ * This class represents a YAML file on the filesystem from
+ * which the config values will be read and accessed.
  */
 
 public class ConfigFile {

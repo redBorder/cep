@@ -1,9 +1,6 @@
 package net.redborder.cep.sources.kafka;
 
 import com.lmax.disruptor.EventHandler;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.ConsumerConnector;
 import net.redborder.cep.sources.Source;
 import net.redborder.cep.sources.parsers.ParsersManager;
 import org.apache.curator.framework.CuratorFramework;
@@ -29,9 +26,6 @@ import java.util.concurrent.TimeUnit;
 public class KafkaSource extends Source {
     private static final Logger log = LogManager.getLogger(KafkaSource.class);
 
-    // The Kafka Consumer Object API
-    private ConsumerConnector consumer;
-
     // A map that stores one executor services for each topic that
     // will be read from kafka. Each executor service will execute
     // a set of threads, one for each partitions on each topic.
@@ -40,11 +34,12 @@ public class KafkaSource extends Source {
     // The list of topics that must be read from Kafka
     private List<Topic> topics = new ArrayList<>();
 
-    // The consumer properties
-    private Properties props;
-
     // The Apache Curator instance, in order to connect with ZooKeeper
     private CuratorFramework curator;
+
+    //Array of consumers
+    public static List<Consumer> consumers = new ArrayList<>();
+
 
     // Do nothing, just call the parent constructor
     public KafkaSource(ParsersManager parsersManager, EventHandler eventHandler, Map<String, Object> properties) {
@@ -58,19 +53,11 @@ public class KafkaSource extends Source {
 
     @Override
     public void prepare() {
-        String zkConnect = (String) getProperty("zk_connect");
 
+        String zkConnect = (String) getProperty("zk_connect");
         curator = CuratorFrameworkFactory.newClient(zkConnect, new RetryNTimes(10, 30000));
         curator.start();
 
-        props = new Properties();
-        props.put("auto.commit.enable", "true");
-        props.put("zookeeper.connect", zkConnect);
-        props.put("group.id", "rb-cep-engine");
-        props.put("zookeeper.session.timeout.ms", "400");
-        props.put("zookeeper.sync.time.ms", "200");
-        props.put("auto.commit.interval.ms", "60000");
-        props.put("auto.offset.reset", "largest");
     }
 
 
@@ -129,8 +116,7 @@ public class KafkaSource extends Source {
      */
 
     private void initConsumers() {
-        // Create the Kafka consumers connectors and remove any executors that may be present
-        consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
+        // Remove any executors that may be present
         executors.clear();
 
         Map<String, Integer> topicsHash = new HashMap<>();
@@ -140,20 +126,18 @@ public class KafkaSource extends Source {
             topicsHash.putAll(topic.toMap());
         }
 
-        // Gets the list of KafkaStreams (partitions) associated with each topic
-        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicsHash);
 
         // For each topic...
         for (Topic topic : topics) {
-            // Get the list of partitions
-            List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic.getName());
 
             // Create a new Executor Service
             ExecutorService executor = Executors.newFixedThreadPool(topic.getPartitions());
 
             // Send and start a thread for each partition and schedule it on the executor service
-            for (final KafkaStream stream : streams) {
-                executor.submit(new Consumer(stream, topic));
+            for (Integer thread = 0; thread < topic.getPartitions(); thread++) {
+                Consumer consumerRunner = new Consumer(thread, topic);
+                consumers.add(consumerRunner);
+                executor.submit(consumerRunner);
             }
 
             // Save the Executor Service for later use
@@ -168,7 +152,10 @@ public class KafkaSource extends Source {
      */
 
     public void shutdown() {
-        if (consumer != null) consumer.shutdown();
+
+        for (Consumer consumer : consumers) {
+            consumer.shutdown();
+        }
         for (ExecutorService executor : executors.values()) {
             if (executor != null) executor.shutdown();
         }
@@ -212,7 +199,6 @@ public class KafkaSource extends Source {
                     executorService.shutdown();
                     log.info("Awaiting consumers termination...");
                     executorService.awaitTermination(5, TimeUnit.SECONDS);
-                    consumer.shutdown();
                     log.info("Done!");
 
                     // Set the new partitions and start the consumers again

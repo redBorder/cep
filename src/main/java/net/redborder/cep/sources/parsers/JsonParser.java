@@ -16,7 +16,7 @@ public class JsonParser implements Parser {
     private ObjectMapper mapper;
 
     // Init a new JSON parser
-    public JsonParser(){
+    public JsonParser() {
         mapper = new ObjectMapper();
     }
 

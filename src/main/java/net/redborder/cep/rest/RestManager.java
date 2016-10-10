@@ -20,7 +20,8 @@ public class RestManager {
     private static RestListener listener;
     private static HttpServer server;
 
-    private RestManager() {}
+    private RestManager() {
+    }
 
     /**
      * Starts the HTTP server exposing the resources defined in the RestRules class.
@@ -28,8 +29,8 @@ public class RestManager {
      * which will be notified every time the REST API receives a request of some type.
      *
      * @param wsUri The base URL of the HTTP REST API
-     * @param rl The RestListener object that will be notified when a user sends
-     *           an HTTP request to the API
+     * @param rl    The RestListener object that will be notified when a user sends
+     *              an HTTP request to the API
      * @see RestRules
      * @see RestListener
      */

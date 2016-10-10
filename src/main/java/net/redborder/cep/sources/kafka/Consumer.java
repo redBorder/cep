@@ -1,14 +1,19 @@
 package net.redborder.cep.sources.kafka;
 
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
+
 import net.redborder.cep.sources.Source;
 import net.redborder.cep.sources.parsers.Parser;
+import net.redborder.cep.util.ConfigData;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A thread that will consume messages from a given partition from a topic.
@@ -19,12 +24,9 @@ import java.util.Map;
  * @see Source
  */
 
-public class Consumer implements Runnable {
+public class Consumer extends Thread {
     private final static Logger log = LogManager.getLogger(Consumer.class);
 
-    // The KafkaStream from where this thread will consume messages
-    // This object represents a partition on a topic.
-    private KafkaStream stream;
 
     // The partition's topic
     private Topic topic;
@@ -35,17 +37,34 @@ public class Consumer implements Runnable {
     // The source that will receive the consumed messages
     private Source source;
 
+    private KafkaConsumer<String, String> consumer;
+
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    private Integer threadId;
+
+
     /**
      * Creates a consumer thread.
      *
-     * @param stream The KafkaStream that will be used to consume messages
-     * @param topic The topic associated to the KafkaStream partition.
+     * @param threadId The thread ID
+     * @param topic    The topic associated to the KafkaStream partition.
      */
-    public Consumer(KafkaStream stream, Topic topic) {
-        this.stream = stream;
+    public Consumer(Integer threadId, Topic topic) {
         this.topic = topic;
         this.parser = topic.getParser();
         this.source = topic.getSource();
+        this.threadId = threadId;
+
+        Properties props = new Properties();
+        props.put("bootstrap.servers", ConfigData.getKafkaBrokers());
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "rb-cep-engine");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+
+        consumer = new KafkaConsumer<>(props);
     }
 
     /**
@@ -54,26 +73,43 @@ public class Consumer implements Runnable {
 
     @Override
     public void run() {
-        log.debug("Starting consumer for topic {}", topic);
-        ConsumerIterator<byte[], byte[]> it = stream.iterator();
 
-        // For each message present on the partition...
-        while (it.hasNext()) {
-            Map<String, Object> event = null;
+        consumer.subscribe(Collections.singletonList(topic.getName()), new ConsumerRebalanceListener() {
 
-            // Parse it with the parser associated with the topic
-            try {
-                event = parser.parse(new String(it.next().message(), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            @Override
+            public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+                System.out.println("Removing  : " + partitions);
             }
 
-            // Send it to the source
-            if (event != null) {
-                source.send(topic.getName(), event);
+            @Override
+            public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                System.out.println("Adding    : " + partitions);
+            }
+        });
+
+        log.debug("Starting consumer for topic {}, thread: {}", topic, threadId);
+
+
+        while (!closed.get()) {
+            ConsumerRecords<String, String> records = consumer.poll(100);
+            for (ConsumerRecord<String, String> record : records) {
+                Map<String, Object> event;
+
+                // Parse it with the parser associated with the topic
+                event = parser.parse(record.value());
+                // Send it to the source
+                if (event != null) {
+                    source.send(topic.getName(), record.key(), event);
+                }
             }
         }
 
         log.debug("Finished consumer for topic {}", topic);
+    }
+
+    public void shutdown() {
+        System.out.println("Closing THREAD[" + threadId + "]");
+        closed.set(true);
+        consumer.wakeup();
     }
 }

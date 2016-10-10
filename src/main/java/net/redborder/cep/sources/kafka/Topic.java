@@ -31,10 +31,10 @@ public class Topic {
     /**
      * Constructs a new topic.
      *
-     * @param name The name of the kafka topic
+     * @param name       The name of the kafka topic
      * @param partitions The number of partitions
-     * @param parser The parser that will be used to parse messages coming from this topic
-     * @param source The source that will receive the messages consumed from this topic
+     * @param parser     The parser that will be used to parse messages coming from this topic
+     * @param source     The source that will receive the messages consumed from this topic
      */
 
     public Topic(String name, Integer partitions, Parser parser, Source source) {
@@ -101,7 +101,7 @@ public class Topic {
      * @return Map representation of the topic
      */
 
-    public Map<String, Integer> toMap(){
+    public Map<String, Integer> toMap() {
         Map<String, Integer> hash = new HashMap<>();
         hash.put(name, partitions);
         return hash;
