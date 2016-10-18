@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static net.redborder.cep.util.Constants.*;
+
 /**
  * This class handles the state of the correlation engine, which is Siddhi.
  * It also manages the events coming from the HTTP API, and the messages produced by
@@ -118,7 +120,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
             String topic = mapEvent.getSource();
             for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
                 if (siddhiPlan.getInput().contains(topic)) {
-                    data.put("__KEY", key);
+                    data.put(__KEY, key);
                     siddhiPlan.send(topic, data);
                 }
             }

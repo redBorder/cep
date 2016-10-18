@@ -14,6 +14,8 @@ import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import static net.redborder.cep.util.Constants.*;
+
 import java.util.*;
 
 /**
@@ -315,7 +317,7 @@ public class SiddhiPlan {
         if (executionPlan.toLowerCase().contains("select ")) {
             int index = executionPlan.toLowerCase().indexOf("select ");
             executionPlanWithKey.append(executionPlan.substring(0, index + 7));
-            executionPlanWithKey.append("__KEY, ");
+            executionPlanWithKey.append(__KEY + ", ");
             executionPlanWithKey.append(executionPlan.substring(index + 7));
         }
 
@@ -344,7 +346,6 @@ public class SiddhiPlan {
             log.warn("Received send from invalid topic {} to execution plan {} version {}", topicName, id, version);
             return;
         }
-
         List<Object> elementsList = new ArrayList<>();
         Map<String, String> attributes = ConfigData.getAttributes(topicName);
         for (String attributeName : attributes.keySet()) {

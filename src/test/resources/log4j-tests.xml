@@ -9,7 +9,7 @@
     </appender>
 
     <logger name="net.redborder.cep" additivity="false">
-        <level value="info" />
+        <level value="debug" />
         <appender-ref ref="console"/>
     </logger>
 

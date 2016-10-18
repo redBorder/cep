@@ -2,6 +2,7 @@ package net.redborder.cep.sinks.kafka;
 
 import org.apache.kafka.clients.producer.Partitioner;
 import org.apache.kafka.common.Cluster;
+import org.apache.kafka.common.utils.Utils;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class SimplePartitioner implements Partitioner {
 
     @Override
     public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {
-        return (key == null) ? 0 : Math.abs(key.hashCode() % cluster.partitionCountForTopic(topic));
+        return (key == null) ? 0 : Utils.abs(Utils.murmur2(key.toString().getBytes()) % cluster.partitionCountForTopic(topic));
     }
 
     @Override

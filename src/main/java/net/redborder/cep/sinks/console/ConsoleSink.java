@@ -4,6 +4,8 @@ import net.redborder.cep.sinks.Sink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static net.redborder.cep.util.Constants.*;
+
 import java.util.Map;
 
 /**
@@ -36,8 +38,8 @@ public class ConsoleSink extends Sink {
     @Override
     public void process(String streamName, String topic, Map<String, Object> message) {
         String key;
-        if (message.containsKey("__KEY")) {
-            key = (String) message.remove("__KEY");
+        if (message.containsKey(__KEY)) {
+            key = (String) message.remove(__KEY);
             process(streamName, topic, key, message);
         } else {
             log.info("[{}] {}", streamName, message);

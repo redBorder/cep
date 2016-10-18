@@ -9,6 +9,8 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -50,20 +52,20 @@ public class Consumer extends Thread {
      * @param threadId The thread ID
      * @param topic    The topic associated to the KafkaStream partition.
      */
-    public Consumer(Integer threadId, Topic topic) {
+    public Consumer(Integer threadId, Topic topic, String kafka_brokers) {
         this.topic = topic;
         this.parser = topic.getParser();
         this.source = topic.getSource();
         this.threadId = threadId;
 
         Properties props = new Properties();
-        props.put("bootstrap.servers", ConfigData.getKafkaBrokers());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "rb-cep-engine");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-
+        props.put("bootstrap.servers", kafka_brokers);
+        props.put(ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
+        props.put(GROUP_ID_CONFIG, "rb-cep-engine");
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(AUTO_OFFSET_RESET_CONFIG, ConfigData.getConfigFile().getOrDefault("kafka_offset", "latest"));
         consumer = new KafkaConsumer<>(props);
     }
 
@@ -73,7 +75,6 @@ public class Consumer extends Thread {
 
     @Override
     public void run() {
-
         consumer.subscribe(Collections.singletonList(topic.getName()), new ConsumerRebalanceListener() {
 
             @Override
@@ -89,12 +90,10 @@ public class Consumer extends Thread {
 
         log.debug("Starting consumer for topic {}, thread: {}", topic, threadId);
 
-
         while (!closed.get()) {
             ConsumerRecords<String, String> records = consumer.poll(100);
             for (ConsumerRecord<String, String> record : records) {
                 Map<String, Object> event;
-
                 // Parse it with the parser associated with the topic
                 event = parser.parse(record.value());
                 // Send it to the source

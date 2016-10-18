@@ -45,6 +45,7 @@ public class SinksManager {
             // Get its name, class and properties
             String sinkName = (String) sinkEntry.get("name");
             String sinkNameClass = (String) sinkEntry.get("class");
+
             Map<String, Object> properties = (Map<String, Object>) sinkEntry.get("properties");
 
             try {
@@ -120,5 +121,4 @@ public class SinksManager {
             sink.process(streamName, topic, key, message);
         }
     }
-
 }

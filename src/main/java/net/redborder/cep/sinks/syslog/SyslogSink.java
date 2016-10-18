@@ -4,6 +4,8 @@ import net.redborder.cep.sinks.Sink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static net.redborder.cep.util.Constants.*;
+
 import java.util.Map;
 
 public class SyslogSink extends Sink {
@@ -17,8 +19,8 @@ public class SyslogSink extends Sink {
     @Override
     public void process(String streamName, String topic, Map<String, Object> message) {
         String key;
-        if (message.containsKey("__KEY")) {
-            key = (String) message.remove("__KEY");
+        if (message.containsKey(__KEY)) {
+            key = (String) message.remove(__KEY);
             process(streamName, topic, key, message);
         } else {
             logger.info("RULE: [{}] ALERT: [{}]", streamName, message);

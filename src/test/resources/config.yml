@@ -1,10 +1,16 @@
-rest_uri: http://10.0.150.131:8888
+rest_uri: http://127.0.0.1:8888
 state_file: /tmp/testState.json
 sources:
    - name: kafka
      class: net.redborder.cep.sources.kafka.KafkaSource
      properties:
-       zk_connect: zknode:2181
+       zk_connect: 127.0.0.1:2181
+       kafka_brokers: 127.0.0.1:9092
+sinks:
+  - name: kafka
+    class: net.redborder.cep.sinks.kafka.KafkaSink
+    properties:
+      kafka_brokers: 127.0.0.1:9092
 parsers:
   json: net.redborder.cep.sources.parsers.JsonParser
 streams:

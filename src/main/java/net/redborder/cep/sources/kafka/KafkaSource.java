@@ -41,6 +41,9 @@ public class KafkaSource extends Source {
     public static List<Consumer> consumers = new ArrayList<>();
 
 
+    //Kafka_brokers
+    private String kafka_brokers;
+
     // Do nothing, just call the parent constructor
     public KafkaSource(ParsersManager parsersManager, EventHandler eventHandler, Map<String, Object> properties) {
         super(parsersManager, eventHandler, properties);
@@ -55,6 +58,7 @@ public class KafkaSource extends Source {
     public void prepare() {
 
         String zkConnect = (String) getProperty("zk_connect");
+        kafka_brokers = (String) getProperty("kafka_brokers");
         curator = CuratorFrameworkFactory.newClient(zkConnect, new RetryNTimes(10, 30000));
         curator.start();
 
@@ -135,7 +139,7 @@ public class KafkaSource extends Source {
 
             // Send and start a thread for each partition and schedule it on the executor service
             for (Integer thread = 0; thread < topic.getPartitions(); thread++) {
-                Consumer consumerRunner = new Consumer(thread, topic);
+                Consumer consumerRunner = new Consumer(thread, topic, kafka_brokers);
                 consumers.add(consumerRunner);
                 executor.submit(consumerRunner);
             }
@@ -153,9 +157,6 @@ public class KafkaSource extends Source {
 
     public void shutdown() {
 
-        for (Consumer consumer : consumers) {
-            consumer.shutdown();
-        }
         for (ExecutorService executor : executors.values()) {
             if (executor != null) executor.shutdown();
         }

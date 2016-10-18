@@ -4,9 +4,14 @@ import net.redborder.cep.sinks.Sink;
 import net.redborder.cep.util.ConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import static net.redborder.cep.util.Constants.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -47,10 +52,14 @@ public class KafkaSink extends Sink {
         super(properties);
         // The producer config attributes
         Properties props = new Properties();
-        props.put("bootstrap.servers", ConfigData.getKafkaBrokers());
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("partitioner.class", "net.redborder.cep.sinks.kafka.SimplePartitioner");
+        if (properties != null && properties.get("kafka_brokers") != null) {
+            props.put(BOOTSTRAP_SERVERS_CONFIG, properties.get("kafka_brokers"));
+        } else {
+            props.put(BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        }
+        props.put(VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(PARTITIONER_CLASS_CONFIG, "net.redborder.cep.sinks.kafka.SimplePartitioner");
 
         // Initialize the producer
         producer = new KafkaProducer<String, String>(props);
@@ -72,8 +81,8 @@ public class KafkaSink extends Sink {
     public void process(String streamName, String topic, Map<String, Object> message) {
         if (!closed.get()) {
             String key = (String) message.get("client_mac");
-            if (message.containsKey("__KEY")) {
-                key = (String) message.remove("__KEY");
+            if (message.containsKey(__KEY)) {
+                key = (String) message.remove(__KEY);
                 process(streamName, topic, key, message);
             } else {
                 send(topic, key, message);
@@ -118,7 +127,6 @@ public class KafkaSink extends Sink {
             String messageStr = objectMapper.writeValueAsString(message);
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, messageStr);
             producer.send(record);
-            producer.flush();
         } catch (IOException e) {
             log.error("Error converting map to json: {}", message);
         }
