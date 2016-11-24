@@ -22,11 +22,24 @@ public abstract class Sink {
      * processing the event.
      *
      * @param streamName The message input stream
-     * @param topic The destination topic
-     * @param message The message
+     * @param topic      The destination topic
+     * @param message    The message
      */
 
     public abstract void process(String streamName, String topic, Map<String, Object> message);
+
+    /**
+     * This method process the given message from the given stream input, and
+     * sends it to a system that will be responsible for storing, persisting and/or
+     * processing the event.
+     *
+     * @param streamName The message input stream
+     * @param topic      The destination topic
+     * @param key        The message key
+     * @param message    The message
+     */
+
+    public abstract void process(String streamName, String topic, String key, Map<String, Object> message);
 
     /**
      * This method starts the sink, requesting resources that may be

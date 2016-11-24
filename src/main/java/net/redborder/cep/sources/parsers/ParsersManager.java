@@ -53,7 +53,7 @@ public class ParsersManager {
 
         // Save a reference of the parser associated with each stream
         // from the config file
-        for (String streamName : ConfigData.getStreams()){
+        for (String streamName : ConfigData.getStreams()) {
             String parseName = ConfigData.getParser(streamName);
             try {
                 streams.put(streamName, getParserByName(parseName));
@@ -73,7 +73,7 @@ public class ParsersManager {
 
     public Parser getParserByName(String parseName) throws ParserNotExistException {
         Parser parser = parsers.get(parseName);
-        if(parser == null){
+        if (parser == null) {
             throw new ParserNotExistException("This " + parseName + " doesn't appear on config file");
         } else {
             return parser;
@@ -90,7 +90,7 @@ public class ParsersManager {
 
     public Parser getParserByStream(String streamName) throws ParserNotExistException {
         Parser parser = streams.get(streamName);
-        if(parser == null){
+        if (parser == null) {
             throw new ParserNotExistException("This " + streamName + " doesn't appear on config file or has incorrect parsers: " + ConfigData.getParser(streamName));
         } else {
             return parser;
@@ -102,12 +102,12 @@ public class ParsersManager {
      * with the given stream name
      *
      * @param streamName The stream name
-     * @param msg The message to be parsed
+     * @param msg        The message to be parsed
      * @return A map that results from parsing the given message with the
-     *         parser associated with the given stream name
+     * parser associated with the given stream name
      */
 
-    public Map<String, Object> parse(String streamName, String msg){
+    public Map<String, Object> parse(String streamName, String msg) {
         Parser parser = getParserByStream(streamName);
         return parser.parse(msg);
     }

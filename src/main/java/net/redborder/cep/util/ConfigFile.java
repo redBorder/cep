@@ -8,12 +8,13 @@ import org.ho.yaml.exception.YamlException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *  This class represents a YAML file on the filesystem from
- *  which the config values will be read and accessed.
+ * This class represents a YAML file on the filesystem from
+ * which the config values will be read and accessed.
  */
 
 public class ConfigFile {
@@ -38,6 +39,18 @@ public class ConfigFile {
     }
 
     /**
+     * Constructor.
+     * Takes the file name to read, and loads the data from it calling the reload method
+     *
+     * @param configMap The path to the file that will be open
+     */
+
+    public ConfigFile(Map<String, Object> configMap) {
+        this.configFile = null;
+        this.map = configMap;
+    }
+
+    /**
      * This method updates de instance attribute map with the data loaded
      * from the file configFile
      */
@@ -52,6 +65,22 @@ public class ConfigFile {
             log.error("Couldn't read config file {}. Is it a YAML file?", configFile);
             System.exit(1);
         }
+    }
+
+    /**
+     * This method puts a configData map to this class. It can be used to pass a mapped config
+     */
+
+    public void putMap(Map<String, Object> configData) {
+        this.map = configData;
+    }
+
+    /**
+     * This method returns the configData map of this class.
+     */
+
+    public Map<String, Object> getMap() {
+        return this.map;
     }
 
     /**

@@ -44,7 +44,7 @@ public class SiddhiHandlerTest extends TestCase {
         assertTrue(siddhiHandler.getSiddhiPlans().containsKey("testID"));
     }
 
-    @Test(expected=RestException.class)
+    @Test(expected = RestException.class)
     public void addPresent() throws RestException {
         SiddhiHandler siddhiHandler = new SiddhiHandler();
 
@@ -81,7 +81,7 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.add(executionPlanMap);
     }
 
-    @Test(expected=RestException.class)
+    @Test(expected = RestException.class)
     public void addInvalid() throws RestException {
         SiddhiHandler siddhiHandler = new SiddhiHandler();
 
@@ -98,7 +98,7 @@ public class SiddhiHandlerTest extends TestCase {
         siddhiHandler.add(executionPlanMap);
     }
 
-    @Test(expected=RestException.class)
+    @Test(expected = RestException.class)
     public void addInvalidMap() throws RestException {
         SiddhiHandler siddhiHandler = new SiddhiHandler();
 

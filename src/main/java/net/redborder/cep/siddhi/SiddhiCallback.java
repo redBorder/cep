@@ -32,7 +32,7 @@ public class SiddhiCallback {
      * Gets the callback that Siddhi will use to output messages
      *
      * @param streamName The stream that produced the message
-     * @param topic The destination topic for that message
+     * @param topic      The destination topic for that message
      * @param attributes Attributes from the message, which stores both attributes names and values.
      * @return A StreamCallback that Siddhi will use to send events
      */

@@ -45,6 +45,7 @@ public class SinksManager {
             // Get its name, class and properties
             String sinkName = (String) sinkEntry.get("name");
             String sinkNameClass = (String) sinkEntry.get("class");
+
             Map<String, Object> properties = (Map<String, Object>) sinkEntry.get("properties");
 
             try {
@@ -64,16 +65,16 @@ public class SinksManager {
         start();
     }
 
-    private SinksManager(String sinkName, Sink sink){
+    private SinksManager(String sinkName, Sink sink) {
         sinks.put(sinkName, sink);
         start();
     }
 
     /**
-    * Create a new SinksManager with a Console Sink as the sole Sink
-    * */
+     * Create a new SinksManager with a Console Sink as the sole Sink
+     */
 
-    public static SinksManager withConsoleSink(){
+    public static SinksManager withConsoleSink() {
         return new SinksManager("console", new ConsoleSink(null));
     }
 
@@ -111,4 +112,13 @@ public class SinksManager {
         }
     }
 
+    /**
+     * Sends a process signal to all the sinks instantiated.
+     */
+
+    public void process(String streamName, String topic, String key, Map<String, Object> message) {
+        for (Sink sink : sinks.values()) {
+            sink.process(streamName, topic, key, message);
+        }
+    }
 }

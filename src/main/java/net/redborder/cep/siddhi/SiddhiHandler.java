@@ -5,11 +5,11 @@ import net.redborder.cep.rest.RestListener;
 import net.redborder.cep.rest.exceptions.RestException;
 import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
-import net.redborder.cep.sinks.SinksManager;
-import net.redborder.cep.sinks.console.ConsoleSink;
 import net.redborder.cep.siddhi.exceptions.AlreadyExistsException;
 import net.redborder.cep.siddhi.exceptions.ExecutionPlanException;
 import net.redborder.cep.siddhi.exceptions.InvalidExecutionPlanException;
+import net.redborder.cep.sinks.SinksManager;
+import net.redborder.cep.sinks.console.ConsoleSink;
 import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.util.ConfigData;
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static net.redborder.cep.util.Constants.*;
 
 /**
  * This class handles the state of the correlation engine, which is Siddhi.
@@ -104,8 +106,8 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
      * <p>This method forwards each message received to every siddhi plan
      * that has marked the message's stream as an input stream.
      *
-     * @param mapEvent The message received from the source
-     * @param sequence unused
+     * @param mapEvent   The message received from the source
+     * @param sequence   unused
      * @param endOfBatch unused
      * @throws Exception if there is an error when an siddhi plans read the message
      */
@@ -114,10 +116,11 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
     public void onEvent(MapEvent mapEvent, long sequence, boolean endOfBatch) throws Exception {
         if (!siddhiPlans.isEmpty()) {
             Map<String, Object> data = mapEvent.getData();
+            String key = mapEvent.getKey();
             String topic = mapEvent.getSource();
-
             for (SiddhiPlan siddhiPlan : siddhiPlans.values()) {
                 if (siddhiPlan.getInput().contains(topic)) {
+                    data.put(__KEY, key);
                     siddhiPlan.send(topic, data);
                 }
             }
@@ -130,7 +133,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
      *
      * @param element The map representation of the JSON that the user provided.
      * @throws RestException If the map given does not follow the right siddhi plan schema, or if the
-     *         SiddhiPlan could not be added.
+     *                       SiddhiPlan could not be added.
      * @see #add(SiddhiPlan)
      * @see SiddhiPlan
      */
@@ -150,7 +153,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
      *
      * @param siddhiPlan The SiddhiPlan to be added
      * @throws ExecutionPlanException if there is a SiddhiPlan with an equal or greater version already running
-     *         or if the execution plan associated with the siddhi plan is invalid
+     *                                or if the execution plan associated with the siddhi plan is invalid
      */
 
     public synchronized void add(SiddhiPlan siddhiPlan) throws ExecutionPlanException {
@@ -271,7 +274,7 @@ public class SiddhiHandler implements RestListener, EventHandler<MapEvent> {
         presentExecutionPlansIds.removeAll(executionPlansToKeep);
 
         for (String id : presentExecutionPlansIds) {
-           remove(id);
+            remove(id);
         }
 
         // Save the new state

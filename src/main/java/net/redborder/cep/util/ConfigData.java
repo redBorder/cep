@@ -2,6 +2,8 @@ package net.redborder.cep.util;
 
 import java.util.*;
 
+import static net.redborder.cep.util.Constants.*;
+
 /**
  * This class serves as an interface for config values from the
  * ConfigFile class associated with it. It mainly lets you access the
@@ -13,6 +15,7 @@ import java.util.*;
 public class ConfigData {
     // The config file from which this class will read the data
     private static ConfigFile configFile;
+    private static String kafkaBrokers;
 
     /**
      * Returns the current config file set on this class
@@ -34,8 +37,20 @@ public class ConfigData {
         configFile = new ConfigFile(fileName);
     }
 
+    /**
+     * Sets the config file to be used
+     *
+     * @param configFile The path where the config file is
+     */
+
+    public static void setConfigFile(ConfigFile configFile) {
+        ConfigData.configFile = configFile;
+    }
+
+
     // Mark the constructor as private to avoid external instantiation
-    private ConfigData() { }
+    private ConfigData() {
+    }
 
     /**
      * Gets the kafka brokers string from the config file on the key
@@ -46,10 +61,6 @@ public class ConfigData {
      *
      * @return Set of running kafka brokers
      */
-
-    public static String getKafkaBrokers() {
-        return configFile.getOrDefault("kafka_brokers", "127.0.0.1:9092");
-    }
 
     /**
      * Gets the path of the state file specified on the config with the
@@ -68,7 +79,7 @@ public class ConfigData {
      * If it is not specified on the config file, returns "http://localhost:8888/myapp/"
      *
      * @return The REST URI specified on config file, or "http://localhost:8888/myapp/"
-     *          if not specified
+     * if not specified
      */
 
     public static String getRESTURI() {
@@ -178,6 +189,12 @@ public class ConfigData {
     public static Map<String, String> getAttributes(String streamName) {
         Map<String, Object> topics = configFile.get("streams");
         Map<String, Object> streamData = (Map<String, Object>) topics.get(streamName);
-        return (Map<String, String>) streamData.get("attributes");
+        Map<String, String> attributes = (Map<String, String>) streamData.get("attributes");
+
+        //Add the __KEY attribute in order to produce keyed messages
+        attributes.put(__KEY, "string");
+        return attributes;
     }
+
+
 }

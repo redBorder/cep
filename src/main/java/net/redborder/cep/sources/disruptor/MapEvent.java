@@ -13,23 +13,36 @@ public class MapEvent {
     // The input stream name
     private String source;
 
+    // The message key
+    private String key;
+
     // Sets the message
-    public void setData(Map<String, Object> event){
+    public void setData(Map<String, Object> event) {
         this.event = event;
     }
 
     // Sets the source
-    public void setSource(String source){
+    public void setSource(String source) {
         this.source = source;
     }
 
+    // Sets the key
+    public void setKey(String key) {
+        this.key = key;
+    }
+
     // Returns the message
-    public Map<String, Object> getData(){
+    public Map<String, Object> getData() {
         return event;
     }
 
     // Returns the source
-    public String getSource(){
+    public String getSource() {
         return source;
+    }
+
+    // Returns the message key
+    public String getKey() {
+        return key;
     }
 }

@@ -106,7 +106,7 @@ public class RestRules {
 
     @POST
     @Path("/synchronize")
-    @Consumes (MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response synchronize(String json) {
         RestListener listener = RestManager.getListener();
@@ -200,7 +200,7 @@ public class RestRules {
      * The map has a status entry with the status code, and a message entry with the message
      * of the throwable object.
      *
-     * @param e The throwable object
+     * @param e      The throwable object
      * @param status The status code
      * @return A map representation of the error
      */
