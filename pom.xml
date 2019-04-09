@@ -94,7 +94,21 @@
             <artifactId>siddhi-query-compiler</artifactId>
             <version>${siddhi.version}</version>
         </dependency>
-
+        
+        <!-- siddhi-execution-string-->
+		<dependency>
+            <groupId>org.wso2.extension.siddhi.execution.string</groupId>
+            <artifactId>siddhi-execution-string</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+		
+		<!-- siddhi-execution-map-->
+		<dependency>
+            <groupId>org.wso2.extension.siddhi.execution.map</groupId>
+            <artifactId>siddhi-execution-map</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
