@@ -96,16 +96,9 @@
         </dependency>
         
         <!-- siddhi-execution-string-->
-		<dependency>
+	<dependency>
             <groupId>org.wso2.extension.siddhi.execution.string</groupId>
             <artifactId>siddhi-execution-string</artifactId>
-            <version>3.2.0</version>
-        </dependency>
-		
-		<!-- siddhi-execution-map-->
-		<dependency>
-            <groupId>org.wso2.extension.siddhi.execution.map</groupId>
-            <artifactId>siddhi-execution-map</artifactId>
             <version>3.2.0</version>
         </dependency>
         
