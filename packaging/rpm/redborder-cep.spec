@@ -25,8 +25,7 @@ mvn clean package
 mkdir -p %{buildroot}/usr/lib/%{name}
 install -D -m 644 target/cep-*-selfcontained.jar %{buildroot}/usr/lib/%{name}
 mv %{buildroot}/usr/lib/%{name}/cep-*-selfcontained.jar %{buildroot}/usr/lib/%{name}/cep.jar
-install -D -m 644 src/main/resources/log4j2_demo.xml %{buildroot}/etc/%{name}/log4j2_demo.xml
-install -D -m 644 resources/systemcd/redborder-cep.service %{buildroot}/usr/lib/systemd/system/redborder-cep.service
+install -D -m 644 resources/systemd/redborder-cep.service %{buildroot}/usr/lib/systemd/system/redborder-cep.service
 
 %clean
 rm -rf %{buildroot}
@@ -44,7 +43,6 @@ exit 0
 %files
 %defattr(644,root,root)
 /usr/lib/%{name}
-/etc/%{name}/log4j2_demo.xml
 /usr/lib/systemd/system/redborder-cep.service
 
 %changelog

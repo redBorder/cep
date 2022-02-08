@@ -1,4 +1,4 @@
-PACKAGE_NAME?=	cep
+PACKAGE_NAME?=	redborder-cep
 
 VERSION?=	$(shell git describe --abbrev=6 --tags HEAD --always | sed 's/-/_/g')
 
@@ -32,7 +32,7 @@ srpm: build_prepare
 		--define "__release $(BUILD_NUMBER)" \
 		--resultdir=$(RESULT_DIR) \
 		--buildsrpm \
-		--spec=cep.spec \
+		--spec=redborder-cep.spec \
 		--sources=SOURCES
 	@echo "======= Source RPM now available in $(RESULT_DIR) ======="
 
