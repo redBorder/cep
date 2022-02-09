@@ -37,7 +37,9 @@ getent passwd %{name} >/dev/null || \
     -c "User of %{name} service" %{name}
 exit 0
 
-%post -p /sbin/ldconfig
+%post
+systemctl daemon-reload
+
 %postun -p /sbin/ldconfig
 
 %files
@@ -46,5 +48,6 @@ exit 0
 /usr/lib/systemd/system/redborder-cep.service
 
 %changelog
+* Tue Feb 8 2022 Javier Rodriguez  <javiercrg@redborder.com> - 1.0.1-1
 * Fri Jun 17 2016 Carlos J. Mateos  <cjmateos@redborder.com> - 1.0.0-1
 - first spec version
