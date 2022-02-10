@@ -38,6 +38,7 @@ getent passwd %{name} >/dev/null || \
 exit 0
 
 %post
+/sbin/ldconfig
 systemctl daemon-reload
 
 %postun -p /sbin/ldconfig
