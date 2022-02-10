@@ -2,10 +2,8 @@
 Description=redborder Complex Event Processor
 
 [Service]
-ExecStart='/bin/java -jar -Dlog4j.configurationFile=/etc/redborder-cep/log4j2.xml /usr/lib/redborder-cep/cep.jar /etc/redborder-cep/config.yml'
+ExecStart=/bin/java -jar -Dlog4j.configurationFile=/etc/redborder-cep/log4j2.xml /usr/lib/redborder-cep/cep.jar /etc/redborder-cep/config.yml
 Restart=always
-User=redborder-cep
-Group=redborder-cep
 
 [Install]
 WantedBy=multi-user.target
