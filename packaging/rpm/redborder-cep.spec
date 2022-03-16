@@ -1,4 +1,4 @@
-Name:     cep
+Name:     redborder-cep
 Version:  %{__version}
 Release:  %{__release}%{?dist}
 
@@ -25,8 +25,7 @@ mvn clean package
 mkdir -p %{buildroot}/usr/lib/%{name}
 install -D -m 644 target/cep-*-selfcontained.jar %{buildroot}/usr/lib/%{name}
 mv %{buildroot}/usr/lib/%{name}/cep-*-selfcontained.jar %{buildroot}/usr/lib/%{name}/cep.jar
-install -D -m 644 src/main/resources/log4j2_demo.xml %{buildroot}/etc/%{name}/log4j2_demo.xml
-install -D -m 644 cep.service %{buildroot}/usr/lib/systemd/system/cep.service
+install -D -m 644 resources/systemd/redborder-cep.service %{buildroot}/usr/lib/systemd/system/redborder-cep.service
 
 %clean
 rm -rf %{buildroot}
@@ -38,15 +37,18 @@ getent passwd %{name} >/dev/null || \
     -c "User of %{name} service" %{name}
 exit 0
 
-%post -p /sbin/ldconfig
+%post
+/sbin/ldconfig
+systemctl daemon-reload
+
 %postun -p /sbin/ldconfig
 
 %files
 %defattr(644,root,root)
 /usr/lib/%{name}
-/etc/%{name}/log4j2_demo.xml
-/usr/lib/systemd/system/cep.service
+/usr/lib/systemd/system/redborder-cep.service
 
 %changelog
+* Tue Feb 8 2022 Javier Rodriguez  <javiercrg@redborder.com> - 1.0.1-1
 * Fri Jun 17 2016 Carlos J. Mateos  <cjmateos@redborder.com> - 1.0.0-1
 - first spec version
