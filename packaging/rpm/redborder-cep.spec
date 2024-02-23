@@ -15,6 +15,8 @@ Requires: java
 %description
 %{summary}
 
+%global debug_package %{nil}
+
 %prep
 %setup -qn %{name}-%{version}
 
@@ -37,8 +39,7 @@ getent passwd %{name} >/dev/null || \
     -c "User of %{name} service" %{name}
 exit 0
 
-%post
-/sbin/ldconfig
+%post -p /sbin/ldconfig
 systemctl daemon-reload
 
 %postun -p /sbin/ldconfig
