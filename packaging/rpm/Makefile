@@ -1,6 +1,6 @@
 PACKAGE_NAME?=	redborder-cep
 
-VERSION?=	$(shell git describe --abbrev=6 --tags HEAD --always | sed 's/-/_/g')
+VERSION?=	$(shell git describe --abbrev=6 --tags HEAD --always | sed 's/-/_/g' | sed -e 's/cep_//')
 
 BUILD_NUMBER?= 1
 

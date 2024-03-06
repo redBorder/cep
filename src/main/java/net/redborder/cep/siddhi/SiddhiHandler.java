@@ -14,7 +14,7 @@ import net.redborder.cep.sources.disruptor.MapEvent;
 import net.redborder.cep.util.ConfigData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
