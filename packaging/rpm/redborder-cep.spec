@@ -50,6 +50,8 @@ systemctl daemon-reload
 /usr/lib/systemd/system/redborder-cep.service
 
 %changelog
+* Thu Mar 21 2024 Vicente Mesa <vimesa@redborder.com> - 2.0.0-1
+- Don't build the debug package
 * Tue Feb 8 2022 Javier Rodriguez  <javiercrg@redborder.com> - 1.0.1-1
 * Fri Jun 17 2016 Carlos J. Mateos  <cjmateos@redborder.com> - 1.0.0-1
 - first spec version
