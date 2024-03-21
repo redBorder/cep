@@ -5,7 +5,7 @@ import net.redborder.cep.rest.exceptions.RestInvalidException;
 import net.redborder.cep.rest.exceptions.RestNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
