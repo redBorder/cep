@@ -72,7 +72,7 @@ public class ConfigData {
      */
 
     public static String getRESTURI() {
-        return configFile.getOrDefault("rest_uri", "http://localhost:8888/myapp/");
+        return configFile.getOrDefault("rest_uri", "http://localhost:8478/myapp/");
     }
 
     /**
