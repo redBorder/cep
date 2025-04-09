@@ -1,0 +1,84 @@
+name: RPM Build and Upload
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      TAG: $(cat ./VERSION)
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create tag based on metadata.rb
+        id: create_tag
+        run: |
+          TAG=$(cat ./VERSION)
+          echo "TAG=$TAG" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          if git rev-parse "refs/tags/${{ env.TAG }}" >/dev/null 2>&1; then
+            echo "Tag ${{ env.TAG }} already exists, exiting."
+            exit 1
+          fi
+        shell: bash
+
+      - name: Set Version
+        if: success()
+        run: echo "VERSION=${{ env.TAG }}" >> $GITHUB_ENV
+
+      - name: Run Docker Container
+        if: success()
+        run: docker run --privileged -d --name builder --network host rockylinux:9 /bin/sleep infinity
+
+      - name: Install build tools RPM
+        if: success()
+        run: |
+          docker cp ./ builder:/build
+          docker exec builder bash -c "yum install -y epel-release && yum install -y make git mock"
+          docker exec builder bash -c "rm -rf /etc/mock/default.cfg"
+
+      - name: Setup SDK
+        if: success()
+        run: |
+          docker exec builder bash -c "curl https://raw.githubusercontent.com/redBorder/repoinit/master/sdk9.cfg > /build/sdk9.cfg"
+          docker exec builder bash -c "echo \"config_opts['use_host_resolv'] = True\" >> /build/sdk9.cfg"
+          docker exec builder bash -c "ln -s /build/sdk9.cfg /etc/mock/default.cfg"
+
+      - name: Build RPM using mock
+        if: success()
+        run: |
+          docker exec builder bash -c "git config --global --add safe.directory /build"
+          docker exec builder bash -c "cd /build/ && VERSION=${{ env.TAG }} make rpm"
+
+      - name: Copy RPMS
+        if: success()
+        run: |
+          docker cp builder:/build/packaging/rpm/pkgs/. ./rpms
+
+      - name: Delete non-.rpm files
+        if: success()
+        run: |
+          find ./rpms -type f -not -name '*.rpm' -exec rm {} \;
+
+      - name: Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./rpms/*
+          tag_name: ${{ env.TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
