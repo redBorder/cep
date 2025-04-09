@@ -1,4 +1,4 @@
-rest_uri: http://10.0.150.131:8888
+rest_uri: http://10.0.150.131:8478
 state_file: /tmp/testState.json
 sources:
    - name: kafka
