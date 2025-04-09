@@ -67,8 +67,8 @@ public class KafkaSource extends Source {
         props.put("auto.commit.enable", "true");
         props.put("zookeeper.connect", zkConnect);
         props.put("group.id", "rb-cep-engine");
-        props.put("zookeeper.session.timeout.ms", "400");
-        props.put("zookeeper.sync.time.ms", "200");
+        props.put("zookeeper.session.timeout.ms", "6000");
+        props.put("zookeeper.sync.time.ms", "2000");
         props.put("auto.commit.interval.ms", "60000");
         props.put("auto.offset.reset", "largest");
     }
